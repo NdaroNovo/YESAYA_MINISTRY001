@@ -1,0 +1,39 @@
+# Dependencies
+frontend/node_modules
+backend/venv
+backend/env
+backend/.env
+frontend/.env
+
+# Build outputs
+frontend/dist
+frontend/build
+backend/staticfiles
+backend/media
+
+# Databases
+backend/db.sqlite3
+backend/*.sqlite3
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
