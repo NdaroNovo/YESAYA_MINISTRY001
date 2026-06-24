@@ -2,13 +2,7 @@ import { z } from "zod"
 
 export const loginSchema = z.object({
   username: z.string().min(1, "Jina la mtumiaji linahitajika"),
-  password: z
-    .string()
-    .min(8, "Nenosiri lazima liwe na herufi 8 au zaidi")
-    .regex(/[A-Z]/, "Lazima liwe na herufi kubwa")
-    .regex(/[a-z]/, "Lazima liwe na herufi ndogo")
-    .regex(/[0-9]/, "Lazima liwe na namba")
-    .regex(/[^A-Za-z0-9]/, "Lazima liwe na alama maalum"),
+  password: z.string().min(1, "Nenosiri linahitajika"),
   rememberMe: z.boolean().optional(),
 })
 
