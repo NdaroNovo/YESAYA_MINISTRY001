@@ -132,7 +132,9 @@ Backend iko live.
 
 ## HATUA 4: Unda Superuser
 
-Ili uweze kuingia kwenye app, unahitaji user:
+Ili uweze kuingia kwenye app, unahitaji user. Kuna njia mbili:
+
+### Njia A: Kwa kutumia Shell (Ikiwa Shell ipo kwenye plan yako)
 
 1. Render Dashboard → Web Service (`yesaya-ministry-api`) → **Shell**.
 2. Andika:
@@ -146,6 +148,21 @@ python manage.py createsuperuser
    - Username: `admin`
    - Email: `admin@yesaya.com`
    - Password: (weka nenosiri kali, rudia)
+
+### Njia B: Kwa kutumia Environment Variables (Bora kwa Free Tier)
+
+1. Render Dashboard → Web Service (`yesaya-ministry-api`) → **Environment**.
+2. Ongeza variables hizi:
+
+| Key | Value |
+|-----|-------|
+| `DJANGO_SUPERUSER_USERNAME` | `admin` |
+| `DJANGO_SUPERUSER_EMAIL` | `admin@yesaya.com` |
+| `DJANGO_SUPERUSER_PASSWORD` | (weka nenosiri kali) |
+
+3. Bonyeza **Save Changes**.
+4. Bonyeza **Manual Deploy** → **Deploy latest commit**.
+5. Build script itaanzisha superuser moja kwa moja.
 
 Sasa unaweza kuingia kwenye app kwa `admin` na nenosiri lako.
 
