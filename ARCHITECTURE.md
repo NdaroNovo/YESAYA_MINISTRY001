@@ -26,6 +26,17 @@ YESAYA MINISTRY MANAGEMENT SYSTEM ni mfumo wa ndani wa usimamizi wa Jimbo, Mitaa
 - Charts: Recharts
 - PDF Preview: React PDF
 
+### Mobile App (Android)
+- Language: TypeScript
+- Framework: React Native + Expo
+- Navigation: React Navigation (Bottom Tabs + Native Stack)
+- State: Zustand + AsyncStorage
+- HTTP: Axios
+- Secure Storage: Expo Secure Store
+- Location: Expo Location
+- UI: Custom components (Navy + Gold color scheme)
+- Authentication: JWT (SimpleJWT)
+
 ### Backend
 - Language: Python
 - Framework: Django

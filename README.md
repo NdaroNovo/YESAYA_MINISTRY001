@@ -18,8 +18,12 @@ Enterprise-level church and ministry management system for managing Jimbo, Mitaa
 
 ```
 YESAYA MINISTRY/
-├── frontend/          # React TypeScript SPA
+├── frontend/          # React TypeScript SPA (web)
+├── mobile/            # React Native + Expo Android app
 ├── backend/           # Django REST API
+├── docs/              # Documentation pages
+│   ├── DOCUMENTATION.md # Full app documentation
+│   └── HOSTING.md     # Step-by-step hosting guide
 ├── ARCHITECTURE.md    # Full specification
 └── README.md
 ```
@@ -43,6 +47,21 @@ npm run dev
 ```
 
 Open `http://localhost:5173`.
+
+### Mobile (Android)
+
+```bash
+cd mobile
+npm install
+npx expo start
+```
+
+Bonyeza `a` ili kuendesha kwenye Android emulator. Kuunda APK ya testing:
+
+```bash
+npm install -g eas-cli
+eas build -p android --profile preview
+```
 
 ### Backend
 
@@ -105,6 +124,25 @@ Captured coordinates are stored in:
 ## Lint / Type Errors
 
 If you see missing module errors in the IDE, run `npm install` in the `frontend` folder so the IDE can resolve dependencies.
+
+## Deployment (Test Server)
+
+Backend inaweza kuhifadhiwa kwenye **Render** bila malipo:
+
+1. Sajili akaunti kwenye [render.com](https://render.com)
+2. Unda **Blueprint** kutoka `backend/render.yaml`
+3. Render itaanzisha:
+   - Web service ya Django
+   - PostgreSQL database ya bila malipo
+4. Hakikisha `DATABASE_URL`, `SECRET_KEY`, na `ALLOWED_HOSTS zimesetwa
+5. Baada ya deploy, API itapatikana kwenye `https://yesaya-ministry-api.onrender.com/api`
+
+Pia unaweza kutumia `build.sh` kwa build scripts:
+
+```bash
+cd backend
+chmod +x build.sh
+```
 
 ## Phases
 

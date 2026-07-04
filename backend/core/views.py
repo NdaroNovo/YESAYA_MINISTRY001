@@ -177,6 +177,11 @@ def change_password(request):
 
 
 @api_view(["GET"])
+def health_check(request):
+    return Response({"status": "ok", "service": "YESAYA MINISTRY API"})
+
+
+@api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def dashboard_stats(request):
     church_stats = Church.objects.filter(is_active=True).aggregate(

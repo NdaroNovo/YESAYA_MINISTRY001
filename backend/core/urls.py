@@ -12,6 +12,7 @@ from .views import (
     OfferingViewSet,
     change_password,
     dashboard_stats,
+    health_check,
 )
 
 router = DefaultRouter()
@@ -28,5 +29,6 @@ urlpatterns = [
     path("auth/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("change-password/", change_password),
     path("dashboard-stats/", dashboard_stats),
+    path("health/", health_check),
     path("", include(router.urls)),
 ]
