@@ -116,11 +116,15 @@ class ChurchViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
+        qs = self.queryset
         if user.role == "church_leader" and user.assigned_church:
-            return self.queryset.filter(id=user.assigned_church_id)
+            return qs.filter(id=user.assigned_church_id)
         if user.role == "mtaa_leader" and user.assigned_mtaa:
-            return self.queryset.filter(mtaa_id=user.assigned_mtaa_id)
-        return self.queryset
+            return qs.filter(mtaa_id=user.assigned_mtaa_id)
+        mtaa_id = self.request.query_params.get("mtaa")
+        if mtaa_id:
+            qs = qs.filter(mtaa_id=mtaa_id)
+        return qs
 
 
 class EvangelismRecordViewSet(viewsets.ModelViewSet):
@@ -136,6 +140,9 @@ class EvangelismRecordViewSet(viewsets.ModelViewSet):
             return qs.filter(church_id=user.assigned_church_id)
         if user.role == "mtaa_leader" and user.assigned_mtaa:
             return qs.filter(church__mtaa_id=user.assigned_mtaa_id)
+        church_id = self.request.query_params.get("church")
+        if church_id:
+            qs = qs.filter(church_id=church_id)
         return qs
 
 
@@ -159,6 +166,9 @@ class OfferingViewSet(viewsets.ModelViewSet):
             return qs.filter(church_id=user.assigned_church_id)
         if user.role == "mtaa_leader" and user.assigned_mtaa:
             return qs.filter(church__mtaa_id=user.assigned_mtaa_id)
+        church_id = self.request.query_params.get("church")
+        if church_id:
+            qs = qs.filter(church_id=church_id)
         return qs
 
 
@@ -176,9 +186,16 @@ def change_password(request):
     return Response({"detail": "Nenosiri limebadilishwa."})
 
 
+APP_LATEST_VERSION = "1.1.0"
+
+
 @api_view(["GET"])
 def health_check(request):
-    return Response({"status": "ok", "service": "YESAYA MINISTRY API"})
+    return Response({
+        "status": "ok",
+        "service": "YESAYA MINISTRY API",
+        "latest_app_version": APP_LATEST_VERSION,
+    })
 
 
 @api_view(["GET"])

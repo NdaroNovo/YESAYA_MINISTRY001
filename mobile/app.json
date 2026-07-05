@@ -2,7 +2,7 @@
   "expo": {
     "name": "YESAYA_MINISTRY",
     "slug": "yesaya_ministry",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",

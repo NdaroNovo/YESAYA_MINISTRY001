@@ -54,14 +54,19 @@ export const mtaaApi = {
 };
 
 export const churchApi = {
-  get: () => api.get<ListResponse<Church>>("/churches/").then((r) => ({ ...r, data: toArray(r.data) })),
+  get: (mtaaId?: number) =>
+    api.get<ListResponse<Church>>("/churches/", { params: mtaaId ? { mtaa: mtaaId } : {} })
+      .then((r) => ({ ...r, data: toArray(r.data) })),
+  getOne: (id: number) => api.get<Church>(`/churches/${id}/`),
   create: (data: Partial<Church>) => api.post<Church>("/churches/", data),
   update: (id: number, data: Partial<Church>) => api.patch<Church>(`/churches/${id}/`, data),
   delete: (id: number) => api.delete(`/churches/${id}/`),
 };
 
 export const evangelismApi = {
-  get: () => api.get<ListResponse<EvangelismRecord>>("/evangelism/").then((r) => ({ ...r, data: toArray(r.data) })),
+  get: (churchId?: number) =>
+    api.get<ListResponse<EvangelismRecord>>("/evangelism/", { params: churchId ? { church: churchId } : {} })
+      .then((r) => ({ ...r, data: toArray(r.data) })),
   create: (data: Partial<EvangelismRecord>) => api.post<EvangelismRecord>("/evangelism/", data),
   update: (id: number, data: Partial<EvangelismRecord>) =>
     api.patch<EvangelismRecord>(`/evangelism/${id}/`, data),
@@ -73,7 +78,9 @@ export const offeringTypeApi = {
 };
 
 export const offeringApi = {
-  get: () => api.get<ListResponse<Offering>>("/offerings/").then((r) => ({ ...r, data: toArray(r.data) })),
+  get: (churchId?: number) =>
+    api.get<ListResponse<Offering>>("/offerings/", { params: churchId ? { church: churchId } : {} })
+      .then((r) => ({ ...r, data: toArray(r.data) })),
   create: (data: Partial<Offering>) => api.post<Offering>("/offerings/", data),
   update: (id: number, data: Partial<Offering>) => api.patch<Offering>(`/offerings/${id}/`, data),
   delete: (id: number) => api.delete(`/offerings/${id}/`),

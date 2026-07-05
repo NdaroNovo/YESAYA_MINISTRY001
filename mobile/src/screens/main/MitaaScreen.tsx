@@ -11,14 +11,18 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { Card, Input, Button, Header, EmptyState, FAB, SelectPicker } from "../../components/common";
 import { mtaaApi, jimboApi } from "../../api/services";
 import { useAuthStore } from "../../store/authStore";
 import { colors } from "../../theme/colors";
 import { typography } from "../../theme/typography";
 import type { Mtaa, Jimbo } from "../../types";
+import type { MitaaStackParamList } from "../../navigation/MitaaStack";
 
-export default function MitaaScreen() {
+type Props = NativeStackScreenProps<MitaaStackParamList, "MitaaList">;
+
+export default function MitaaScreen({ navigation }: Props) {
   const [mitaa, setMitaa] = useState<Mtaa[]>([]);
   const [jimbo, setJimbo] = useState<Jimbo[]>([]);
   const [loading, setLoading] = useState(true);
@@ -102,33 +106,40 @@ export default function MitaaScreen() {
 
   const getJimboName = (id: number) => jimbo.find((j) => j.id === id)?.name || `Jimbo ${id}`;
 
+  const navigateToChurches = (item: Mtaa) => {
+    const mtaaWithJimbo = { ...item, jimbo_name: getJimboName(item.jimbo) };
+    navigation.navigate("MtaaChurches", { mtaa: mtaaWithJimbo });
+  };
+
   const renderItem = ({ item }: { item: Mtaa }) => (
-    <Card style={styles.itemCard}>
-      <View style={styles.itemRow}>
-        <View style={styles.itemInfo}>
-          <Text style={styles.itemName}>{item.name}</Text>
-          <Text style={styles.itemMeta}>Jimbo: {getJimboName(item.jimbo)}</Text>
-          {item.leader_name ? <Text style={styles.itemMeta}>Kiongozi: {item.leader_name}</Text> : null}
-          {item.phone ? <Text style={styles.itemMeta}>Simu: {item.phone}</Text> : null}
-          {item.location ? <Text style={styles.itemMeta}>Mahali: {item.location}</Text> : null}
-          <View style={[styles.statusBadge, { backgroundColor: item.is_active ? colors.success + "20" : colors.error + "20" }]}>
-            <Text style={[styles.statusText, { color: item.is_active ? colors.success : colors.error }]}>
-              {item.is_active ? "Inafanya kazi" : "Imezimwa"}
-            </Text>
+    <TouchableOpacity activeOpacity={0.8} onPress={() => navigateToChurches(item)}>
+      <Card style={styles.itemCard}>
+        <View style={styles.itemRow}>
+          <View style={styles.iconWrap}>
+            <Icon name="map-marker" size={26} color={colors.accent} />
+          </View>
+          <View style={styles.itemInfo}>
+            <Text style={styles.itemName}>{item.name}</Text>
+            <Text style={styles.itemMeta}>Jimbo: {getJimboName(item.jimbo)}</Text>
+            {item.leader_name ? <Text style={styles.itemMeta}>Kiongozi: {item.leader_name}</Text> : null}
+            {item.location ? <Text style={styles.itemMeta}>Mahali: {item.location}</Text> : null}
+          </View>
+          <View style={styles.rowEnd}>
+            {canWrite && (
+              <TouchableOpacity onPress={() => openEdit(item)} style={styles.actionBtn}>
+                <Icon name="pencil" size={18} color={colors.primary} />
+              </TouchableOpacity>
+            )}
+            {canWrite && (
+              <TouchableOpacity onPress={() => remove(item.id)} style={styles.actionBtn}>
+                <Icon name="delete" size={18} color={colors.error} />
+              </TouchableOpacity>
+            )}
+            <Icon name="chevron-right" size={22} color={colors.textMuted} />
           </View>
         </View>
-        {canWrite && (
-          <View style={styles.actions}>
-            <TouchableOpacity onPress={() => openEdit(item)} style={styles.actionBtn}>
-              <Icon name="pencil" size={20} color={colors.primary} />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => remove(item.id)} style={styles.actionBtn}>
-              <Icon name="delete" size={20} color={colors.error} />
-            </TouchableOpacity>
-          </View>
-        )}
-      </View>
-    </Card>
+      </Card>
+    </TouchableOpacity>
   );
 
   return (
@@ -204,7 +215,9 @@ const styles = StyleSheet.create({
   screen: { flex: 1, padding: 16 },
   addBtn: { marginBottom: 16 },
   itemCard: { marginBottom: 10 },
-  itemRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" },
+  iconWrap: { width: 44, height: 44, borderRadius: 22, backgroundColor: colors.accent + "20", alignItems: "center", justifyContent: "center", marginRight: 12 },
+  itemRow: { flexDirection: "row", alignItems: "center" },
+  rowEnd: { flexDirection: "row", alignItems: "center" },
   itemInfo: { flex: 1 },
   itemName: { fontSize: typography.sizes.md, fontWeight: typography.weights.semibold, color: colors.primary },
   itemMeta: { fontSize: typography.sizes.sm, color: colors.textMuted, marginTop: 2 },

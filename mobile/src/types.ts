@@ -32,6 +32,7 @@ export interface Jimbo {
 export interface Mtaa {
   id: number;
   jimbo: number;
+  jimbo_name?: string;
   name: string;
   leader_name: string;
   phone: string;
