@@ -160,23 +160,25 @@ export default function MtaaChurchesScreen({ route, navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <FlatList
-        data={churches}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={renderItem}
-        refreshing={loading}
-        onRefresh={load}
-        ListHeaderComponent={
-          <Text style={styles.subtitle}>
-            Jimbo: {mtaa.jimbo_name || `#${mtaa.jimbo}`}  •  Mtaa: {mtaa.name}
-          </Text>
-        }
-        ListEmptyComponent={
-          <EmptyState message="Hakuna makanisa katika mtaa huu. Bonyeza + kuongeza." />
-        }
-        contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
-      />
-      <FAB onPress={openAdd} />
+      <View style={styles.flex}>
+        <FlatList
+          data={churches}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={renderItem}
+          refreshing={loading}
+          onRefresh={load}
+          ListHeaderComponent={
+            <Text style={styles.subtitle}>
+              Jimbo: {mtaa.jimbo_name || `#${mtaa.jimbo}`}  •  Mtaa: {mtaa.name}
+            </Text>
+          }
+          ListEmptyComponent={
+            <EmptyState message="Hakuna makanisa katika mtaa huu. Bonyeza + kuongeza." />
+          }
+          contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
+        />
+        <FAB onPress={openAdd} />
+      </View>
 
       <Modal visible={modalVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
@@ -242,6 +244,7 @@ export default function MtaaChurchesScreen({ route, navigation }: Props) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
+  flex: { flex: 1 },
   screen: { flex: 1, paddingHorizontal: 16 },
   subtitle: {
     fontSize: typography.sizes.sm,

@@ -145,16 +145,18 @@ export default function MitaaScreen({ navigation }: Props) {
   return (
     <SafeAreaView style={styles.container}>
       <Header title="Mitaa" subtitle="Orodha ya mitaa yaliyosajiliwa" />
-      <FlatList
-        data={mitaa}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={renderItem}
-        refreshing={loading}
-        onRefresh={load}
-        ListEmptyComponent={<EmptyState message="Hakuna mitaa iliyosajiliwa bado." />}
-        contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
-      />
-      <FAB onPress={openAdd} />
+      <View style={styles.flex}>
+        <FlatList
+          data={mitaa}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={renderItem}
+          refreshing={loading}
+          onRefresh={load}
+          ListEmptyComponent={<EmptyState message="Hakuna mitaa iliyosajiliwa bado." />}
+          contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
+        />
+        <FAB onPress={openAdd} />
+      </View>
 
       <Modal visible={modalVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
@@ -210,6 +212,7 @@ export default function MitaaScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
+  flex: { flex: 1 },
   screen: { flex: 1, padding: 16 },
   addBtn: { marginBottom: 16 },
   itemCard: { marginBottom: 10 },
