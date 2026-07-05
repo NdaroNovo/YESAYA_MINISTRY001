@@ -1,25 +1,31 @@
 import React, { useEffect } from "react";
-import { Alert } from "react-native";
-import * as Updates from "expo-updates";
+import { Alert, Linking } from "react-native";
+import Constants from "expo-constants";
+import { api } from "../api/client";
+
+const CURRENT_VERSION = Constants.expoConfig?.version ?? "1.0.0";
 
 export default function UpdateChecker() {
   useEffect(() => {
     const checkForUpdate = async () => {
       try {
-        if (__DEV__) return;
-        const update = await Updates.checkForUpdateAsync();
-        if (update.isAvailable) {
+        const { data } = await api.get<{ min_app_version?: string; latest_app_version?: string }>(
+          "/health/"
+        );
+        const latest = data?.latest_app_version;
+        if (!latest) return;
+        if (latest !== CURRENT_VERSION) {
           Alert.alert(
             "Toleo Jipya Linapatikana",
-            "Kuna maboresho mapya ya app. Ungependa kusakinisha sasa?",
+            `Toleo ${latest} linapatikana (wewe una ${CURRENT_VERSION}). Tafadhali pakua APK mpya.`,
             [
               { text: "Baadaye", style: "cancel" },
               {
-                text: "Sasisha Sasa",
-                onPress: async () => {
-                  await Updates.fetchUpdateAsync();
-                  await Updates.reloadAsync();
-                },
+                text: "Pakua Sasa",
+                onPress: () =>
+                  Linking.openURL(
+                    "https://expo.dev/accounts/ndar0n0v0/projects/yesaya_ministry/builds"
+                  ),
               },
             ]
           );
@@ -27,7 +33,8 @@ export default function UpdateChecker() {
       } catch {
       }
     };
-    checkForUpdate();
+    const timer = setTimeout(checkForUpdate, 3000);
+    return () => clearTimeout(timer);
   }, []);
 
   return null;
