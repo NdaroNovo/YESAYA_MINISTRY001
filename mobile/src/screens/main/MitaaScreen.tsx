@@ -29,6 +29,9 @@ export default function MitaaScreen({ navigation }: Props) {
   const [modalVisible, setModalVisible] = useState(false);
   const [editing, setEditing] = useState<Mtaa | null>(null);
   const [form, setForm] = useState({ name: "", leader_name: "", phone: "", location: "", jimbo: "" });
+  const [jimboModalVisible, setJimboModalVisible] = useState(false);
+  const [jimboForm, setJimboForm] = useState({ name: "", district: "", region: "", address: "", phone: "", email: "" });
+  const [savingJimbo, setSavingJimbo] = useState(false);
   const { user } = useAuthStore();
   const canWrite = user?.role !== "viewer";
 
@@ -102,6 +105,31 @@ export default function MitaaScreen({ navigation }: Props) {
         },
       },
     ]);
+  };
+
+  const openAddJimbo = () => {
+    setJimboForm({ name: "", district: "", region: "", address: "", phone: "", email: "" });
+    setJimboModalVisible(true);
+  };
+
+  const saveJimbo = async () => {
+    if (!jimboForm.name) {
+      Alert.alert("Tafadhali", "Jina la Jimbo linahitajika.");
+      return;
+    }
+    setSavingJimbo(true);
+    try {
+      const res = await jimboApi.create(jimboForm);
+      const newJimbo = res.data;
+      const updated = [...jimbo, newJimbo];
+      setJimbo(updated);
+      setForm((f) => ({ ...f, jimbo: newJimbo.id.toString() }));
+      setJimboModalVisible(false);
+    } catch {
+      Alert.alert("Kosa", "Imeshindwa kuhifadhi Jimbo.");
+    } finally {
+      setSavingJimbo(false);
+    }
   };
 
   const getJimboName = (id: number) => jimbo.find((j) => j.id === id)?.name || `Jimbo ${id}`;
@@ -190,17 +218,77 @@ export default function MitaaScreen({ navigation }: Props) {
                 placeholder="Weka mahali / anwani"
               />
 
+              <View style={styles.jimboHeader}>
+                <Text style={styles.jimboLabel}>Chagua Jimbo *</Text>
+                <TouchableOpacity style={styles.addJimboBtn} onPress={openAddJimbo}>
+                  <Icon name="plus" size={14} color={colors.surface} />
+                  <Text style={styles.addJimboBtnText}>Jimbo Mpya</Text>
+                </TouchableOpacity>
+              </View>
               <SelectPicker
-                label="Chagua Jimbo *"
+                label=""
                 options={jimbo.map((j) => ({ label: j.name, value: j.id.toString() }))}
                 value={form.jimbo}
                 onChange={(v) => setForm({ ...form, jimbo: v })}
-                emptyText="Hakuna Jimbo. Unda Jimbo kwanza kwenye web app."
+                emptyText="Bonyeza 'Jimbo Mpya' kuongeza."
               />
 
               <View style={styles.modalActions}>
                 <Button title="Ghairi" onPress={() => setModalVisible(false)} variant="outline" style={styles.modalBtn} />
                 <Button title="Hifadhi" onPress={save} variant="primary" style={styles.modalBtn} />
+              </View>
+            </View>
+          </ScrollView>
+        </View>
+      </Modal>
+      <Modal visible={jimboModalVisible} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <ScrollView contentContainerStyle={styles.modalScroll} keyboardShouldPersistTaps="handled">
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Ongeza Jimbo Jipya</Text>
+
+              <Input
+                label="Jina la Jimbo *"
+                value={jimboForm.name}
+                onChangeText={(t) => setJimboForm({ ...jimboForm, name: t })}
+                placeholder="Mfano: Jimbo la Kaskazini"
+              />
+              <Input
+                label="Wilaya"
+                value={jimboForm.district}
+                onChangeText={(t) => setJimboForm({ ...jimboForm, district: t })}
+                placeholder="Weka jina la wilaya"
+              />
+              <Input
+                label="Mkoa"
+                value={jimboForm.region}
+                onChangeText={(t) => setJimboForm({ ...jimboForm, region: t })}
+                placeholder="Weka jina la mkoa"
+              />
+              <Input
+                label="Anwani"
+                value={jimboForm.address}
+                onChangeText={(t) => setJimboForm({ ...jimboForm, address: t })}
+                placeholder="Weka anwani"
+              />
+              <Input
+                label="Simu"
+                value={jimboForm.phone}
+                onChangeText={(t) => setJimboForm({ ...jimboForm, phone: t })}
+                keyboardType="phone-pad"
+                placeholder="Weka nambari ya simu"
+              />
+              <Input
+                label="Barua pepe"
+                value={jimboForm.email}
+                onChangeText={(t) => setJimboForm({ ...jimboForm, email: t })}
+                keyboardType="email-address"
+                placeholder="Weka barua pepe"
+              />
+
+              <View style={styles.modalActions}>
+                <Button title="Ghairi" onPress={() => setJimboModalVisible(false)} variant="outline" style={styles.modalBtn} />
+                <Button title={savingJimbo ? "Inahifadhi..." : "Hifadhi"} onPress={saveJimbo} variant="primary" style={styles.modalBtn} />
               </View>
             </View>
           </ScrollView>
@@ -232,4 +320,8 @@ const styles = StyleSheet.create({
   modalTitle: { fontSize: typography.sizes.lg, fontWeight: typography.weights.bold, color: colors.primary, marginBottom: 16 },
   modalActions: { flexDirection: "row", justifyContent: "space-between", marginTop: 16 },
   modalBtn: { flex: 1, marginHorizontal: 4 },
+  jimboHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 4, marginTop: 8 },
+  jimboLabel: { fontSize: typography.sizes.sm, fontWeight: typography.weights.semibold, color: colors.text },
+  addJimboBtn: { flexDirection: "row", alignItems: "center", backgroundColor: colors.accent, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 14, gap: 4 },
+  addJimboBtnText: { fontSize: typography.sizes.xs, color: colors.surface, fontWeight: typography.weights.semibold },
 });
