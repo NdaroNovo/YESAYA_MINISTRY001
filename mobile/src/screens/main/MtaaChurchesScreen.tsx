@@ -160,25 +160,23 @@ export default function MtaaChurchesScreen({ route, navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.screen}>
-        <FlatList
-          data={churches}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={renderItem}
-          refreshing={loading}
-          onRefresh={load}
-          ListHeaderComponent={
-            <Text style={styles.subtitle}>
-              Jimbo: {mtaa.jimbo_name || `#${mtaa.jimbo}`}  •  Mtaa: {mtaa.name}
-            </Text>
-          }
-          ListEmptyComponent={
-            <EmptyState message="Hakuna makanisa katika mtaa huu. Bonyeza + kuongeza." />
-          }
-          contentContainerStyle={{ paddingBottom: 100 }}
-        />
-      </View>
-      {canWrite && <FAB onPress={openAdd} />}
+      <FlatList
+        data={churches}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={renderItem}
+        refreshing={loading}
+        onRefresh={load}
+        ListHeaderComponent={
+          <Text style={styles.subtitle}>
+            Jimbo: {mtaa.jimbo_name || `#${mtaa.jimbo}`}  •  Mtaa: {mtaa.name}
+          </Text>
+        }
+        ListEmptyComponent={
+          <EmptyState message="Hakuna makanisa katika mtaa huu. Bonyeza + kuongeza." />
+        }
+        contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
+      />
+      <FAB onPress={openAdd} />
 
       <Modal visible={modalVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>

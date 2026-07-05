@@ -337,7 +337,7 @@ export default function ChurchDetailScreen({ route, navigation }: Props) {
             ListEmptyComponent={<EmptyState message="Hakuna taarifa za uinjilisti. Bonyeza + kuongeza." />}
             contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
           />
-          {canWrite && <FAB onPress={openAddEv} />}
+          <FAB onPress={openAddEv} />
         </View>
       ) : (
         <View style={styles.flex}>
@@ -350,7 +350,7 @@ export default function ChurchDetailScreen({ route, navigation }: Props) {
             ListEmptyComponent={<EmptyState message="Hakuna matoleo. Bonyeza + kuongeza." />}
             contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
           />
-          {canWrite && <FAB onPress={openAddOff} />}
+          <FAB onPress={openAddOff} />
         </View>
       )}
 

@@ -144,19 +144,17 @@ export default function MitaaScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.screen}>
-        <Header title="Mitaa" subtitle="Orodha ya mitaa yaliyosajiliwa" />
-        <FlatList
-          data={mitaa}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={renderItem}
-          refreshing={loading}
-          onRefresh={load}
-          ListEmptyComponent={<EmptyState message="Hakuna mitaa iliyosajiliwa bado." />}
-          contentContainerStyle={{ paddingBottom: 100 }}
-        />
-      {canWrite && <FAB onPress={openAdd} />}
-      </View>
+      <Header title="Mitaa" subtitle="Orodha ya mitaa yaliyosajiliwa" />
+      <FlatList
+        data={mitaa}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={renderItem}
+        refreshing={loading}
+        onRefresh={load}
+        ListEmptyComponent={<EmptyState message="Hakuna mitaa iliyosajiliwa bado." />}
+        contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
+      />
+      <FAB onPress={openAdd} />
 
       <Modal visible={modalVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
