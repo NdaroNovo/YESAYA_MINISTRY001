@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import { Card, Input, Button, Header, EmptyState } from "../../components/common";
+import { Card, Input, Button, Header, EmptyState, FAB, SelectPicker } from "../../components/common";
 import { churchApi, mtaaApi } from "../../api/services";
 import { useAuthStore } from "../../store/authStore";
 import { colors } from "../../theme/colors";
@@ -32,8 +32,8 @@ export default function ChurchesScreen() {
     setLoading(true);
     try {
       const [cRes, mRes] = await Promise.all([churchApi.get(), mtaaApi.get()]);
-      setChurches(cRes.data.results || cRes.data);
-      setMitaa(mRes.data.results || mRes.data);
+      setChurches(cRes.data);
+      setMitaa(mRes.data);
     } catch {
       Alert.alert("Kosa", "Imeshindwa kupakia makanisa.");
     } finally {
@@ -127,9 +127,6 @@ export default function ChurchesScreen() {
     <SafeAreaView style={styles.container}>
       <View style={styles.screen}>
         <Header title="Makanisa" subtitle="Orodha ya makanisa yaliyosajiliwa" />
-        {canWrite && (
-          <Button title="Ongeza Kanisa" onPress={openAdd} variant="secondary" style={styles.addBtn} />
-        )}
         <FlatList
           data={churches}
           keyExtractor={(item) => item.id.toString()}
@@ -139,6 +136,7 @@ export default function ChurchesScreen() {
           ListEmptyComponent={<EmptyState message="Hakuna makanisa yaliyosajiliwa bado." />}
           contentContainerStyle={{ paddingBottom: 100 }}
         />
+      {canWrite && <FAB onPress={openAdd} />}
       </View>
 
       <Modal visible={modalVisible} animationType="slide" transparent>
@@ -152,22 +150,13 @@ export default function ChurchesScreen() {
               <Input label="Anuani" value={form.address} onChangeText={(t) => setForm({ ...form, address: t })} placeholder="Weka anuani" />
               <Input label="Idadi ya Wanachama" value={form.member_count} onChangeText={(t) => setForm({ ...form, member_count: t })} keyboardType="numeric" placeholder="0" />
 
-              <Text style={styles.sectionLabel}>Chagua Mtaa *</Text>
-              {mitaa.length === 0 ? (
-                <Text style={styles.noDataText}>Hakuna Mtaa. Unda Mtaa kwanza kwenye tab ya Mitaa.</Text>
-              ) : (
-                mitaa.map((m) => (
-                  <TouchableOpacity
-                    key={m.id}
-                    style={[styles.optionRow, form.mtaa === m.id.toString() && styles.optionRowActive]}
-                    onPress={() => setForm({ ...form, mtaa: m.id.toString() })}
-                  >
-                    <Text style={[styles.optionText, form.mtaa === m.id.toString() && styles.optionTextActive]}>
-                      {form.mtaa === m.id.toString() ? "✓  " : "       "}{m.name}
-                    </Text>
-                  </TouchableOpacity>
-                ))
-              )}
+              <SelectPicker
+                label="Chagua Mtaa *"
+                options={mitaa.map((m) => ({ label: m.name, value: m.id.toString() }))}
+                value={form.mtaa}
+                onChange={(v) => setForm({ ...form, mtaa: v })}
+                emptyText="Hakuna Mtaa. Unda Mtaa kwanza kwenye tab ya Mitaa."
+              />
 
               <View style={styles.modalActions}>
                 <Button title="Ghairi" onPress={() => setModalVisible(false)} variant="outline" style={styles.modalBtn} />
@@ -184,7 +173,6 @@ export default function ChurchesScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   screen: { flex: 1, padding: 16 },
-  addBtn: { marginBottom: 16 },
   itemCard: { marginBottom: 10 },
   itemRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   itemInfo: { flex: 1 },
@@ -196,12 +184,6 @@ const styles = StyleSheet.create({
   modalScroll: { flexGrow: 1, justifyContent: "center", padding: 20 },
   modalContent: { backgroundColor: colors.surface, borderRadius: 16, padding: 20 },
   modalTitle: { fontSize: typography.sizes.lg, fontWeight: typography.weights.bold, color: colors.primary, marginBottom: 16 },
-  sectionLabel: { fontSize: typography.sizes.sm, fontWeight: typography.weights.medium, color: colors.text, marginBottom: 8 },
-  noDataText: { fontSize: typography.sizes.sm, color: colors.textMuted, marginBottom: 12, fontStyle: "italic" },
-  optionRow: { flexDirection: "row", alignItems: "center", padding: 12, borderRadius: 10, borderWidth: 1, borderColor: colors.border, marginBottom: 8 },
-  optionRowActive: { borderColor: colors.accent, backgroundColor: colors.accent + "10" },
-  optionText: { fontSize: typography.sizes.base, color: colors.text },
-  optionTextActive: { color: colors.primary, fontWeight: typography.weights.semibold },
   modalActions: { flexDirection: "row", justifyContent: "space-between", marginTop: 16 },
   modalBtn: { flex: 1, marginHorizontal: 4 },
 });

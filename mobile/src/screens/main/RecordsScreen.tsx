@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import { Card, Input, Button, Header, EmptyState } from "../../components/common";
+import { Card, Input, Button, Header, EmptyState, FAB, SelectPicker } from "../../components/common";
 import { evangelismApi, offeringApi, churchApi, offeringTypeApi } from "../../api/services";
 import { useAuthStore } from "../../store/authStore";
 import { useLocation } from "../../hooks/useLocation";
@@ -45,10 +45,10 @@ export default function RecordsScreen() {
         churchApi.get(),
         offeringTypeApi.get(),
       ]);
-      setEvangelism(evRes.data.results || evRes.data);
-      setOfferings(offRes.data.results || offRes.data);
-      setChurches(cRes.data.results || cRes.data);
-      setOfferingTypes(otRes.data.results || otRes.data);
+      setEvangelism(evRes.data);
+      setOfferings(offRes.data);
+      setChurches(cRes.data);
+      setOfferingTypes(otRes.data);
     } catch {
       Alert.alert("Kosa", "Imeshindwa kupakia taarifa.");
     } finally {
@@ -146,10 +146,6 @@ export default function RecordsScreen() {
           </TouchableOpacity>
         </View>
 
-        {canWrite && (
-          <Button title="Ongeza Taarifa" onPress={openAdd} variant="secondary" style={styles.addBtn} />
-        )}
-
         {tab === "evangelism" ? (
           <FlatList
             data={evangelism}
@@ -171,6 +167,7 @@ export default function RecordsScreen() {
             contentContainerStyle={{ paddingBottom: 100 }}
           />
         )}
+      {canWrite && <FAB onPress={openAdd} />}
       </View>
 
       <Modal visible={modalVisible} animationType="slide" transparent>
@@ -179,31 +176,17 @@ export default function RecordsScreen() {
             <View style={styles.modalContent}>
               <Text style={styles.modalTitle}>Ongeza {tab === "evangelism" ? "Uinjilisti" : "Matoleo"}</Text>
 
-              <Text style={styles.sectionLabel}>Chagua Kanisa *</Text>
-              {churches.length === 0 ? (
-                <Text style={styles.noDataText}>Hakuna makanisa. Unda kanisa kwanza kwenye tab ya Makanisa.</Text>
-              ) : (
-                churches.map((c) => (
-                  <TouchableOpacity
-                    key={c.id}
-                    style={[styles.optionRow,
-                      (tab === "evangelism" ? evForm.church : offForm.church) === c.id.toString() && styles.optionRowActive
-                    ]}
-                    onPress={() =>
-                      tab === "evangelism"
-                        ? setEvForm({ ...evForm, church: c.id.toString() })
-                        : setOffForm({ ...offForm, church: c.id.toString() })
-                    }
-                  >
-                    <Text style={[
-                      styles.optionText,
-                      (tab === "evangelism" ? evForm.church : offForm.church) === c.id.toString() && styles.optionTextActive
-                    ]}>
-                      {(tab === "evangelism" ? evForm.church : offForm.church) === c.id.toString() ? "✓  " : "       "}{c.name}
-                    </Text>
-                  </TouchableOpacity>
-                ))
-              )}
+              <SelectPicker
+                label="Chagua Kanisa *"
+                options={churches.map((c) => ({ label: c.name, value: c.id.toString() }))}
+                value={tab === "evangelism" ? evForm.church : offForm.church}
+                onChange={(v) =>
+                  tab === "evangelism"
+                    ? setEvForm({ ...evForm, church: v })
+                    : setOffForm({ ...offForm, church: v })
+                }
+                emptyText="Hakuna makanisa. Unda kanisa kwanza kwenye tab ya Makanisa."
+              />
 
               {tab === "evangelism" ? (
                 <>
@@ -217,18 +200,13 @@ export default function RecordsScreen() {
                 </>
               ) : (
                 <>
-                  <Text style={styles.sectionLabel}>Chagua Aina ya Toleo *</Text>
-                  {offeringTypes.map((ot) => (
-                    <TouchableOpacity
-                      key={ot.id}
-                      style={[styles.optionRow, offForm.offering_type === ot.id.toString() && styles.optionRowActive]}
-                      onPress={() => setOffForm({ ...offForm, offering_type: ot.id.toString() })}
-                    >
-                      <Text style={[styles.optionText, offForm.offering_type === ot.id.toString() && styles.optionTextActive]}>
-                        {offForm.offering_type === ot.id.toString() ? "✓  " : "       "}{ot.name}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
+                  <SelectPicker
+                    label="Chagua Aina ya Toleo *"
+                    options={offeringTypes.map((ot) => ({ label: ot.name, value: ot.id.toString() }))}
+                    value={offForm.offering_type}
+                    onChange={(v) => setOffForm({ ...offForm, offering_type: v })}
+                    emptyText="Hakuna aina za matoleo."
+                  />
                   <Input label="Kiasi (TSh)" value={offForm.amount} onChangeText={(t) => setOffForm({ ...offForm, amount: t })} keyboardType="numeric" placeholder="0" />
                   <Input label="Mwezi (1-12)" value={offForm.month} onChangeText={(t) => setOffForm({ ...offForm, month: t })} keyboardType="numeric" />
                   <Input label="Mwaka" value={offForm.year} onChangeText={(t) => setOffForm({ ...offForm, year: t })} keyboardType="numeric" />
@@ -256,7 +234,6 @@ const styles = StyleSheet.create({
   tabActive: { backgroundColor: colors.primary },
   tabText: { color: colors.textMuted, fontWeight: typography.weights.medium },
   tabTextActive: { color: colors.surface },
-  addBtn: { marginBottom: 16 },
   itemCard: { marginBottom: 10 },
   itemTitle: { fontSize: typography.sizes.md, fontWeight: typography.weights.semibold, color: colors.primary },
   itemMeta: { fontSize: typography.sizes.sm, color: colors.textMuted, marginTop: 2 },
@@ -264,12 +241,6 @@ const styles = StyleSheet.create({
   modalScroll: { flexGrow: 1, justifyContent: "center", padding: 20 },
   modalContent: { backgroundColor: colors.surface, borderRadius: 16, padding: 20 },
   modalTitle: { fontSize: typography.sizes.lg, fontWeight: typography.weights.bold, color: colors.primary, marginBottom: 16 },
-  sectionLabel: { fontSize: typography.sizes.sm, fontWeight: typography.weights.medium, color: colors.text, marginBottom: 8 },
-  noDataText: { fontSize: typography.sizes.sm, color: colors.textMuted, marginBottom: 12, fontStyle: "italic" },
-  optionRow: { flexDirection: "row", alignItems: "center", padding: 12, borderRadius: 10, borderWidth: 1, borderColor: colors.border, marginBottom: 8 },
-  optionRowActive: { borderColor: colors.accent, backgroundColor: colors.accent + "10" },
-  optionText: { fontSize: typography.sizes.base, color: colors.text },
-  optionTextActive: { color: colors.primary, fontWeight: typography.weights.semibold },
   modalActions: { flexDirection: "row", justifyContent: "space-between", marginTop: 16 },
   modalBtn: { flex: 1, marginHorizontal: 4 },
 });

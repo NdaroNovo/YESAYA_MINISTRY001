@@ -6,6 +6,7 @@ import LoginScreen from "../screens/auth/LoginScreen";
 import MainTabs from "./MainTabs";
 import { useAuthStore } from "../store/authStore";
 import { authApi } from "../api/services";
+import UpdateChecker from "../components/UpdateChecker";
 
 const Stack = createNativeStackNavigator();
 
@@ -34,6 +35,7 @@ export default function AppNavigator() {
 
   return (
     <NavigationContainer>
+      <UpdateChecker />
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {!isAuthenticated ? (
           <Stack.Screen name="Login" component={LoginScreen} />

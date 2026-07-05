@@ -1,5 +1,12 @@
 export type UserRole = "super_admin" | "jimbo_admin" | "mtaa_leader" | "church_leader" | "viewer";
 
+export interface PaginatedResponse<T> {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+}
+
 export interface User {
   id: number;
   username: string;

@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import { Card, Input, Button, Header, EmptyState } from "../../components/common";
+import { Card, Input, Button, Header, EmptyState, FAB, SelectPicker } from "../../components/common";
 import { mtaaApi, jimboApi } from "../../api/services";
 import { useAuthStore } from "../../store/authStore";
 import { colors } from "../../theme/colors";
@@ -32,8 +32,8 @@ export default function MitaaScreen() {
     setLoading(true);
     try {
       const [mRes, jRes] = await Promise.all([mtaaApi.get(), jimboApi.get()]);
-      setMitaa(mRes.data.results || mRes.data);
-      setJimbo(jRes.data.results || jRes.data);
+      setMitaa(mRes.data);
+      setJimbo(jRes.data);
     } catch {
       Alert.alert("Kosa", "Imeshindwa kupakia mitaa.");
     } finally {
@@ -135,9 +135,6 @@ export default function MitaaScreen() {
     <SafeAreaView style={styles.container}>
       <View style={styles.screen}>
         <Header title="Mitaa" subtitle="Orodha ya mitaa yaliyosajiliwa" />
-        {canWrite && (
-          <Button title="Ongeza Mtaa" onPress={openAdd} variant="secondary" style={styles.addBtn} />
-        )}
         <FlatList
           data={mitaa}
           keyExtractor={(item) => item.id.toString()}
@@ -147,6 +144,7 @@ export default function MitaaScreen() {
           ListEmptyComponent={<EmptyState message="Hakuna mitaa iliyosajiliwa bado." />}
           contentContainerStyle={{ paddingBottom: 100 }}
         />
+      {canWrite && <FAB onPress={openAdd} />}
       </View>
 
       <Modal visible={modalVisible} animationType="slide" transparent>
@@ -181,27 +179,13 @@ export default function MitaaScreen() {
                 placeholder="Weka mahali / anwani"
               />
 
-              <Text style={styles.sectionLabel}>Chagua Jimbo *</Text>
-              {jimbo.length === 0 ? (
-                <Text style={styles.noDataText}>Hakuna Jimbo. Unda Jimbo kwanza kwenye web app.</Text>
-              ) : (
-                jimbo.map((j) => (
-                  <TouchableOpacity
-                    key={j.id}
-                    style={[styles.optionRow, form.jimbo === j.id.toString() && styles.optionRowActive]}
-                    onPress={() => setForm({ ...form, jimbo: j.id.toString() })}
-                  >
-                    <Icon
-                      name={form.jimbo === j.id.toString() ? "radiobox-marked" : "radiobox-blank"}
-                      size={20}
-                      color={form.jimbo === j.id.toString() ? colors.accent : colors.textMuted}
-                    />
-                    <Text style={[styles.optionText, form.jimbo === j.id.toString() && styles.optionTextActive]}>
-                      {j.name}
-                    </Text>
-                  </TouchableOpacity>
-                ))
-              )}
+              <SelectPicker
+                label="Chagua Jimbo *"
+                options={jimbo.map((j) => ({ label: j.name, value: j.id.toString() }))}
+                value={form.jimbo}
+                onChange={(v) => setForm({ ...form, jimbo: v })}
+                emptyText="Hakuna Jimbo. Unda Jimbo kwanza kwenye web app."
+              />
 
               <View style={styles.modalActions}>
                 <Button title="Ghairi" onPress={() => setModalVisible(false)} variant="outline" style={styles.modalBtn} />
@@ -232,12 +216,6 @@ const styles = StyleSheet.create({
   modalScroll: { flexGrow: 1, justifyContent: "center", padding: 20 },
   modalContent: { backgroundColor: colors.surface, borderRadius: 16, padding: 20 },
   modalTitle: { fontSize: typography.sizes.lg, fontWeight: typography.weights.bold, color: colors.primary, marginBottom: 16 },
-  sectionLabel: { fontSize: typography.sizes.sm, fontWeight: typography.weights.medium, color: colors.text, marginBottom: 8 },
-  noDataText: { fontSize: typography.sizes.sm, color: colors.textMuted, marginBottom: 12, fontStyle: "italic" },
-  optionRow: { flexDirection: "row", alignItems: "center", padding: 12, borderRadius: 10, borderWidth: 1, borderColor: colors.border, marginBottom: 8 },
-  optionRowActive: { borderColor: colors.accent, backgroundColor: colors.accent + "10" },
-  optionText: { fontSize: typography.sizes.base, color: colors.text, marginLeft: 10 },
-  optionTextActive: { color: colors.primary, fontWeight: typography.weights.semibold },
   modalActions: { flexDirection: "row", justifyContent: "space-between", marginTop: 16 },
   modalBtn: { flex: 1, marginHorizontal: 4 },
 });
