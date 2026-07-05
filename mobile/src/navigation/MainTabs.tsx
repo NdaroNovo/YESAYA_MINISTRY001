@@ -2,6 +2,7 @@ import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import DashboardScreen from "../screens/main/DashboardScreen";
+import MitaaScreen from "../screens/main/MitaaScreen";
 import ChurchesScreen from "../screens/main/ChurchesScreen";
 import RecordsScreen from "../screens/main/RecordsScreen";
 import ReportsScreen from "../screens/main/ReportsScreen";
@@ -17,6 +18,7 @@ export default function MainTabs() {
         tabBarIcon: ({ color, size }) => {
           const icons: Record<string, string> = {
             Dashboard: "view-dashboard",
+            Mitaa: "map-marker-multiple",
             Churches: "church",
             Records: "book-edit",
             Reports: "file-chart",
@@ -39,6 +41,7 @@ export default function MainTabs() {
       })}
     >
       <Tab.Screen name="Dashboard" component={DashboardScreen} options={{ title: "Dashboard" }} />
+      <Tab.Screen name="Mitaa" component={MitaaScreen} options={{ title: "Mitaa" }} />
       <Tab.Screen name="Churches" component={ChurchesScreen} options={{ title: "Makanisa" }} />
       <Tab.Screen name="Records" component={RecordsScreen} options={{ title: "Taarifa" }} />
       <Tab.Screen name="Reports" component={ReportsScreen} options={{ title: "Ripoti" }} />

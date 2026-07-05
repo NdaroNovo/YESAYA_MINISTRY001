@@ -13,6 +13,7 @@ export default function LoginScreen() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [slowMsg, setSlowMsg] = useState<string | null>(null);
   const { setAuth } = useAuthStore();
   const { capture } = useLocation();
 
@@ -23,14 +24,22 @@ export default function LoginScreen() {
     }
     setLoading(true);
     setError(null);
+    setSlowMsg(null);
+    const slowTimer = setTimeout(() => {
+      setSlowMsg("Server inaamka, tafadhali subiri kidogo...");
+    }, 5000);
     try {
       await capture();
       const { data } = await authApi.login({ username, password });
+      clearTimeout(slowTimer);
       await setAuth(data.user, data.access);
     } catch (err: any) {
+      clearTimeout(slowTimer);
       const msg = err.response?.data?.detail || err.message || "Imeshindwa kuingia. Jaribu tena.";
       setError(msg);
     } finally {
+      clearTimeout(slowTimer);
+      setSlowMsg(null);
       setLoading(false);
     }
   };
@@ -68,6 +77,7 @@ export default function LoginScreen() {
             />
 
             {error && <Text style={styles.error}>{error}</Text>}
+            {slowMsg && !error && <Text style={styles.slowMsg}>{slowMsg}</Text>}
 
             <Button title="Ingia" onPress={handleLogin} loading={loading} variant="primary" />
           </Card>
@@ -148,5 +158,11 @@ const styles = StyleSheet.create({
     fontSize: typography.sizes.xs,
     textAlign: "center",
     marginTop: 24,
+  },
+  slowMsg: {
+    color: colors.accent,
+    fontSize: typography.sizes.sm,
+    marginBottom: 12,
+    textAlign: "center",
   },
 });

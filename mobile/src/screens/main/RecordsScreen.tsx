@@ -7,6 +7,7 @@ import {
   Modal,
   TouchableOpacity,
   Alert,
+  ScrollView,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
@@ -174,34 +175,73 @@ export default function RecordsScreen() {
 
       <Modal visible={modalVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Ongeza {tab === "evangelism" ? "Uinjilisti" : "Matoleo"}</Text>
-            {tab === "evangelism" ? (
-              <>
-                <Input label="Kanisa ID" value={evForm.church} onChangeText={(t) => setEvForm({ ...evForm, church: t })} keyboardType="numeric" />
-                <Input label="Mwezi (1-12)" value={evForm.month} onChangeText={(t) => setEvForm({ ...evForm, month: t })} keyboardType="numeric" />
-                <Input label="Mwaka" value={evForm.year} onChangeText={(t) => setEvForm({ ...evForm, year: t })} keyboardType="numeric" />
-                <Input label="Waliobatizwa" value={evForm.baptized} onChangeText={(t) => setEvForm({ ...evForm, baptized: t })} keyboardType="numeric" />
-                <Input label="Waliokombolewa" value={evForm.converted} onChangeText={(t) => setEvForm({ ...evForm, converted: t })} keyboardType="numeric" />
-                <Input label="Waliotembelewa" value={evForm.visited} onChangeText={(t) => setEvForm({ ...evForm, visited: t })} keyboardType="numeric" />
-                <Input label="Waliosaidika" value={evForm.supported} onChangeText={(t) => setEvForm({ ...evForm, supported: t })} keyboardType="numeric" />
-                <Input label="Maoni" value={evForm.comments} onChangeText={(t) => setEvForm({ ...evForm, comments: t })} />
-              </>
-            ) : (
-              <>
-                <Input label="Kanisa ID" value={offForm.church} onChangeText={(t) => setOffForm({ ...offForm, church: t })} keyboardType="numeric" />
-                <Input label="Aina ya Toleo ID" value={offForm.offering_type} onChangeText={(t) => setOffForm({ ...offForm, offering_type: t })} keyboardType="numeric" />
-                <Input label="Kiasi" value={offForm.amount} onChangeText={(t) => setOffForm({ ...offForm, amount: t })} keyboardType="numeric" />
-                <Input label="Mwezi (1-12)" value={offForm.month} onChangeText={(t) => setOffForm({ ...offForm, month: t })} keyboardType="numeric" />
-                <Input label="Mwaka" value={offForm.year} onChangeText={(t) => setOffForm({ ...offForm, year: t })} keyboardType="numeric" />
-                <Input label="Maoni" value={offForm.notes} onChangeText={(t) => setOffForm({ ...offForm, notes: t })} />
-              </>
-            )}
-            <View style={styles.modalActions}>
-              <Button title="Ghairi" onPress={() => setModalVisible(false)} variant="outline" style={styles.modalBtn} />
-              <Button title="Hifadhi" onPress={tab === "evangelism" ? saveEvangelism : saveOffering} variant="primary" style={styles.modalBtn} />
+          <ScrollView contentContainerStyle={styles.modalScroll} keyboardShouldPersistTaps="handled">
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Ongeza {tab === "evangelism" ? "Uinjilisti" : "Matoleo"}</Text>
+
+              <Text style={styles.sectionLabel}>Chagua Kanisa *</Text>
+              {churches.length === 0 ? (
+                <Text style={styles.noDataText}>Hakuna makanisa. Unda kanisa kwanza kwenye tab ya Makanisa.</Text>
+              ) : (
+                churches.map((c) => (
+                  <TouchableOpacity
+                    key={c.id}
+                    style={[styles.optionRow,
+                      (tab === "evangelism" ? evForm.church : offForm.church) === c.id.toString() && styles.optionRowActive
+                    ]}
+                    onPress={() =>
+                      tab === "evangelism"
+                        ? setEvForm({ ...evForm, church: c.id.toString() })
+                        : setOffForm({ ...offForm, church: c.id.toString() })
+                    }
+                  >
+                    <Text style={[
+                      styles.optionText,
+                      (tab === "evangelism" ? evForm.church : offForm.church) === c.id.toString() && styles.optionTextActive
+                    ]}>
+                      {(tab === "evangelism" ? evForm.church : offForm.church) === c.id.toString() ? "✓  " : "       "}{c.name}
+                    </Text>
+                  </TouchableOpacity>
+                ))
+              )}
+
+              {tab === "evangelism" ? (
+                <>
+                  <Input label="Mwezi (1-12)" value={evForm.month} onChangeText={(t) => setEvForm({ ...evForm, month: t })} keyboardType="numeric" />
+                  <Input label="Mwaka" value={evForm.year} onChangeText={(t) => setEvForm({ ...evForm, year: t })} keyboardType="numeric" />
+                  <Input label="Waliobatizwa" value={evForm.baptized} onChangeText={(t) => setEvForm({ ...evForm, baptized: t })} keyboardType="numeric" />
+                  <Input label="Waliokombolewa" value={evForm.converted} onChangeText={(t) => setEvForm({ ...evForm, converted: t })} keyboardType="numeric" />
+                  <Input label="Waliotembelewa" value={evForm.visited} onChangeText={(t) => setEvForm({ ...evForm, visited: t })} keyboardType="numeric" />
+                  <Input label="Waliosaidika" value={evForm.supported} onChangeText={(t) => setEvForm({ ...evForm, supported: t })} keyboardType="numeric" />
+                  <Input label="Maoni" value={evForm.comments} onChangeText={(t) => setEvForm({ ...evForm, comments: t })} />
+                </>
+              ) : (
+                <>
+                  <Text style={styles.sectionLabel}>Chagua Aina ya Toleo *</Text>
+                  {offeringTypes.map((ot) => (
+                    <TouchableOpacity
+                      key={ot.id}
+                      style={[styles.optionRow, offForm.offering_type === ot.id.toString() && styles.optionRowActive]}
+                      onPress={() => setOffForm({ ...offForm, offering_type: ot.id.toString() })}
+                    >
+                      <Text style={[styles.optionText, offForm.offering_type === ot.id.toString() && styles.optionTextActive]}>
+                        {offForm.offering_type === ot.id.toString() ? "✓  " : "       "}{ot.name}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                  <Input label="Kiasi (TSh)" value={offForm.amount} onChangeText={(t) => setOffForm({ ...offForm, amount: t })} keyboardType="numeric" placeholder="0" />
+                  <Input label="Mwezi (1-12)" value={offForm.month} onChangeText={(t) => setOffForm({ ...offForm, month: t })} keyboardType="numeric" />
+                  <Input label="Mwaka" value={offForm.year} onChangeText={(t) => setOffForm({ ...offForm, year: t })} keyboardType="numeric" />
+                  <Input label="Maoni" value={offForm.notes} onChangeText={(t) => setOffForm({ ...offForm, notes: t })} />
+                </>
+              )}
+
+              <View style={styles.modalActions}>
+                <Button title="Ghairi" onPress={() => setModalVisible(false)} variant="outline" style={styles.modalBtn} />
+                <Button title="Hifadhi" onPress={tab === "evangelism" ? saveEvangelism : saveOffering} variant="primary" style={styles.modalBtn} />
+              </View>
             </View>
-          </View>
+          </ScrollView>
         </View>
       </Modal>
     </SafeAreaView>
@@ -220,9 +260,16 @@ const styles = StyleSheet.create({
   itemCard: { marginBottom: 10 },
   itemTitle: { fontSize: typography.sizes.md, fontWeight: typography.weights.semibold, color: colors.primary },
   itemMeta: { fontSize: typography.sizes.sm, color: colors.textMuted, marginTop: 2 },
-  modalOverlay: { flex: 1, backgroundColor: colors.overlay, justifyContent: "center", padding: 20 },
-  modalContent: { backgroundColor: colors.surface, borderRadius: 16, padding: 20, maxHeight: "90%" },
+  modalOverlay: { flex: 1, backgroundColor: colors.overlay },
+  modalScroll: { flexGrow: 1, justifyContent: "center", padding: 20 },
+  modalContent: { backgroundColor: colors.surface, borderRadius: 16, padding: 20 },
   modalTitle: { fontSize: typography.sizes.lg, fontWeight: typography.weights.bold, color: colors.primary, marginBottom: 16 },
-  modalActions: { flexDirection: "row", justifyContent: "space-between", marginTop: 8 },
+  sectionLabel: { fontSize: typography.sizes.sm, fontWeight: typography.weights.medium, color: colors.text, marginBottom: 8 },
+  noDataText: { fontSize: typography.sizes.sm, color: colors.textMuted, marginBottom: 12, fontStyle: "italic" },
+  optionRow: { flexDirection: "row", alignItems: "center", padding: 12, borderRadius: 10, borderWidth: 1, borderColor: colors.border, marginBottom: 8 },
+  optionRowActive: { borderColor: colors.accent, backgroundColor: colors.accent + "10" },
+  optionText: { fontSize: typography.sizes.base, color: colors.text },
+  optionTextActive: { color: colors.primary, fontWeight: typography.weights.semibold },
+  modalActions: { flexDirection: "row", justifyContent: "space-between", marginTop: 16 },
   modalBtn: { flex: 1, marginHorizontal: 4 },
 });

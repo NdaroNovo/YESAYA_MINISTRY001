@@ -12,30 +12,30 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { Card, Input, Button, Header, EmptyState } from "../../components/common";
-import { churchApi, mtaaApi } from "../../api/services";
+import { mtaaApi, jimboApi } from "../../api/services";
 import { useAuthStore } from "../../store/authStore";
 import { colors } from "../../theme/colors";
 import { typography } from "../../theme/typography";
-import type { Church, Mtaa } from "../../types";
+import type { Mtaa, Jimbo } from "../../types";
 
-export default function ChurchesScreen() {
-  const [churches, setChurches] = useState<Church[]>([]);
+export default function MitaaScreen() {
   const [mitaa, setMitaa] = useState<Mtaa[]>([]);
+  const [jimbo, setJimbo] = useState<Jimbo[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
-  const [editing, setEditing] = useState<Church | null>(null);
-  const [form, setForm] = useState({ name: "", pastor_name: "", phone: "", address: "", member_count: "", mtaa: "" });
+  const [editing, setEditing] = useState<Mtaa | null>(null);
+  const [form, setForm] = useState({ name: "", leader_name: "", phone: "", location: "", jimbo: "" });
   const { user } = useAuthStore();
   const canWrite = user?.role !== "viewer";
 
   const load = async () => {
     setLoading(true);
     try {
-      const [cRes, mRes] = await Promise.all([churchApi.get(), mtaaApi.get()]);
-      setChurches(cRes.data.results || cRes.data);
+      const [mRes, jRes] = await Promise.all([mtaaApi.get(), jimboApi.get()]);
       setMitaa(mRes.data.results || mRes.data);
+      setJimbo(jRes.data.results || jRes.data);
     } catch {
-      Alert.alert("Kosa", "Imeshindwa kupakia makanisa.");
+      Alert.alert("Kosa", "Imeshindwa kupakia mitaa.");
     } finally {
       setLoading(false);
     }
@@ -47,67 +47,75 @@ export default function ChurchesScreen() {
 
   const openAdd = () => {
     setEditing(null);
-    setForm({ name: "", pastor_name: "", phone: "", address: "", member_count: "", mtaa: mitaa[0]?.id.toString() || "" });
+    setForm({ name: "", leader_name: "", phone: "", location: "", jimbo: jimbo[0]?.id.toString() || "" });
     setModalVisible(true);
   };
 
-  const openEdit = (church: Church) => {
-    setEditing(church);
+  const openEdit = (mtaa: Mtaa) => {
+    setEditing(mtaa);
     setForm({
-      name: church.name,
-      pastor_name: church.pastor_name,
-      phone: church.phone,
-      address: church.address,
-      member_count: church.member_count.toString(),
-      mtaa: church.mtaa.toString(),
+      name: mtaa.name,
+      leader_name: mtaa.leader_name,
+      phone: mtaa.phone,
+      location: mtaa.location,
+      jimbo: mtaa.jimbo.toString(),
     });
     setModalVisible(true);
   };
 
   const save = async () => {
-    if (!form.name || !form.mtaa) {
-      Alert.alert("Tafadhali", "Jina la kanisa na mtaa zinahitajika.");
+    if (!form.name || !form.jimbo) {
+      Alert.alert("Tafadhali", "Jina la Mtaa na Jimbo zinahitajika.");
       return;
     }
-    const payload = { ...form, member_count: parseInt(form.member_count || "0", 10), mtaa: parseInt(form.mtaa, 10) };
+    const payload = { ...form, jimbo: parseInt(form.jimbo, 10) };
     try {
       if (editing) {
-        await churchApi.update(editing.id, payload);
+        await mtaaApi.update(editing.id, payload);
       } else {
-        await churchApi.create(payload);
+        await mtaaApi.create(payload);
       }
       setModalVisible(false);
       load();
     } catch {
-      Alert.alert("Kosa", "Imeshindwa kuhifadhi kanisa.");
+      Alert.alert("Kosa", "Imeshindwa kuhifadhi mtaa.");
     }
   };
 
   const remove = (id: number) => {
-    Alert.alert("Thibitisha", "Una uhakika unataka kufuta kanisa hiki?", [
+    Alert.alert("Thibitisha", "Una uhakika unataka kufuta mtaa huu?", [
       { text: "Ghairi", style: "cancel" },
       {
         text: "Futa",
         style: "destructive",
         onPress: async () => {
           try {
-            await churchApi.delete(id);
+            await mtaaApi.delete(id);
             load();
           } catch {
-            Alert.alert("Kosa", "Imeshindwa kufuta kanisa.");
+            Alert.alert("Kosa", "Imeshindwa kufuta mtaa.");
           }
         },
       },
     ]);
   };
 
-  const renderItem = ({ item }: { item: Church }) => (
+  const getJimboName = (id: number) => jimbo.find((j) => j.id === id)?.name || `Jimbo ${id}`;
+
+  const renderItem = ({ item }: { item: Mtaa }) => (
     <Card style={styles.itemCard}>
       <View style={styles.itemRow}>
         <View style={styles.itemInfo}>
           <Text style={styles.itemName}>{item.name}</Text>
-          <Text style={styles.itemMeta}>Mchungaji: {item.pastor_name || "Haijajazwa"}</Text>
-          <Text style={styles.itemMeta}>Wanachama: {item.member_count}</Text>
+          <Text style={styles.itemMeta}>Jimbo: {getJimboName(item.jimbo)}</Text>
+          {item.leader_name ? <Text style={styles.itemMeta}>Kiongozi: {item.leader_name}</Text> : null}
+          {item.phone ? <Text style={styles.itemMeta}>Simu: {item.phone}</Text> : null}
+          {item.location ? <Text style={styles.itemMeta}>Mahali: {item.location}</Text> : null}
+          <View style={[styles.statusBadge, { backgroundColor: item.is_active ? colors.success + "20" : colors.error + "20" }]}>
+            <Text style={[styles.statusText, { color: item.is_active ? colors.success : colors.error }]}>
+              {item.is_active ? "Inafanya kazi" : "Imezimwa"}
+            </Text>
+          </View>
         </View>
         {canWrite && (
           <View style={styles.actions}>
@@ -126,17 +134,17 @@ export default function ChurchesScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.screen}>
-        <Header title="Makanisa" subtitle="Orodha ya makanisa yaliyosajiliwa" />
+        <Header title="Mitaa" subtitle="Orodha ya mitaa yaliyosajiliwa" />
         {canWrite && (
-          <Button title="Ongeza Kanisa" onPress={openAdd} variant="secondary" style={styles.addBtn} />
+          <Button title="Ongeza Mtaa" onPress={openAdd} variant="secondary" style={styles.addBtn} />
         )}
         <FlatList
-          data={churches}
+          data={mitaa}
           keyExtractor={(item) => item.id.toString()}
           renderItem={renderItem}
           refreshing={loading}
           onRefresh={load}
-          ListEmptyComponent={<EmptyState message="Hakuna makanisa yaliyosajiliwa bado." />}
+          ListEmptyComponent={<EmptyState message="Hakuna mitaa iliyosajiliwa bado." />}
           contentContainerStyle={{ paddingBottom: 100 }}
         />
       </View>
@@ -145,25 +153,51 @@ export default function ChurchesScreen() {
         <View style={styles.modalOverlay}>
           <ScrollView contentContainerStyle={styles.modalScroll} keyboardShouldPersistTaps="handled">
             <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>{editing ? "Hariri Kanisa" : "Ongeza Kanisa"}</Text>
-              <Input label="Jina la Kanisa *" value={form.name} onChangeText={(t) => setForm({ ...form, name: t })} placeholder="Weka jina la kanisa" />
-              <Input label="Mchungaji" value={form.pastor_name} onChangeText={(t) => setForm({ ...form, pastor_name: t })} placeholder="Weka jina la mchungaji" />
-              <Input label="Simu" value={form.phone} onChangeText={(t) => setForm({ ...form, phone: t })} keyboardType="phone-pad" placeholder="Weka nambari ya simu" />
-              <Input label="Anuani" value={form.address} onChangeText={(t) => setForm({ ...form, address: t })} placeholder="Weka anuani" />
-              <Input label="Idadi ya Wanachama" value={form.member_count} onChangeText={(t) => setForm({ ...form, member_count: t })} keyboardType="numeric" placeholder="0" />
+              <Text style={styles.modalTitle}>{editing ? "Hariri Mtaa" : "Ongeza Mtaa"}</Text>
 
-              <Text style={styles.sectionLabel}>Chagua Mtaa *</Text>
-              {mitaa.length === 0 ? (
-                <Text style={styles.noDataText}>Hakuna Mtaa. Unda Mtaa kwanza kwenye tab ya Mitaa.</Text>
+              <Input
+                label="Jina la Mtaa *"
+                value={form.name}
+                onChangeText={(t) => setForm({ ...form, name: t })}
+                placeholder="Weka jina la mtaa"
+              />
+              <Input
+                label="Jina la Kiongozi"
+                value={form.leader_name}
+                onChangeText={(t) => setForm({ ...form, leader_name: t })}
+                placeholder="Weka jina la kiongozi"
+              />
+              <Input
+                label="Simu"
+                value={form.phone}
+                onChangeText={(t) => setForm({ ...form, phone: t })}
+                keyboardType="phone-pad"
+                placeholder="Weka nambari ya simu"
+              />
+              <Input
+                label="Mahali"
+                value={form.location}
+                onChangeText={(t) => setForm({ ...form, location: t })}
+                placeholder="Weka mahali / anwani"
+              />
+
+              <Text style={styles.sectionLabel}>Chagua Jimbo *</Text>
+              {jimbo.length === 0 ? (
+                <Text style={styles.noDataText}>Hakuna Jimbo. Unda Jimbo kwanza kwenye web app.</Text>
               ) : (
-                mitaa.map((m) => (
+                jimbo.map((j) => (
                   <TouchableOpacity
-                    key={m.id}
-                    style={[styles.optionRow, form.mtaa === m.id.toString() && styles.optionRowActive]}
-                    onPress={() => setForm({ ...form, mtaa: m.id.toString() })}
+                    key={j.id}
+                    style={[styles.optionRow, form.jimbo === j.id.toString() && styles.optionRowActive]}
+                    onPress={() => setForm({ ...form, jimbo: j.id.toString() })}
                   >
-                    <Text style={[styles.optionText, form.mtaa === m.id.toString() && styles.optionTextActive]}>
-                      {form.mtaa === m.id.toString() ? "✓  " : "       "}{m.name}
+                    <Icon
+                      name={form.jimbo === j.id.toString() ? "radiobox-marked" : "radiobox-blank"}
+                      size={20}
+                      color={form.jimbo === j.id.toString() ? colors.accent : colors.textMuted}
+                    />
+                    <Text style={[styles.optionText, form.jimbo === j.id.toString() && styles.optionTextActive]}>
+                      {j.name}
                     </Text>
                   </TouchableOpacity>
                 ))
@@ -186,12 +220,14 @@ const styles = StyleSheet.create({
   screen: { flex: 1, padding: 16 },
   addBtn: { marginBottom: 16 },
   itemCard: { marginBottom: 10 },
-  itemRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  itemRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" },
   itemInfo: { flex: 1 },
   itemName: { fontSize: typography.sizes.md, fontWeight: typography.weights.semibold, color: colors.primary },
   itemMeta: { fontSize: typography.sizes.sm, color: colors.textMuted, marginTop: 2 },
+  statusBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12, alignSelf: "flex-start", marginTop: 6 },
+  statusText: { fontSize: typography.sizes.xs, fontWeight: typography.weights.semibold },
   actions: { flexDirection: "row" },
-  actionBtn: { padding: 8, marginLeft: 8 },
+  actionBtn: { padding: 8, marginLeft: 4 },
   modalOverlay: { flex: 1, backgroundColor: colors.overlay },
   modalScroll: { flexGrow: 1, justifyContent: "center", padding: 20 },
   modalContent: { backgroundColor: colors.surface, borderRadius: 16, padding: 20 },
@@ -200,7 +236,7 @@ const styles = StyleSheet.create({
   noDataText: { fontSize: typography.sizes.sm, color: colors.textMuted, marginBottom: 12, fontStyle: "italic" },
   optionRow: { flexDirection: "row", alignItems: "center", padding: 12, borderRadius: 10, borderWidth: 1, borderColor: colors.border, marginBottom: 8 },
   optionRowActive: { borderColor: colors.accent, backgroundColor: colors.accent + "10" },
-  optionText: { fontSize: typography.sizes.base, color: colors.text },
+  optionText: { fontSize: typography.sizes.base, color: colors.text, marginLeft: 10 },
   optionTextActive: { color: colors.primary, fontWeight: typography.weights.semibold },
   modalActions: { flexDirection: "row", justifyContent: "space-between", marginTop: 16 },
   modalBtn: { flex: 1, marginHorizontal: 4 },
