@@ -91,8 +91,8 @@ class UserViewSet(viewsets.ModelViewSet):
 class JimboViewSet(viewsets.ModelViewSet):
     queryset = Jimbo.objects.all()
     serializer_class = JimboSerializer
-    permission_classes = [IsJimboAdmin]
-    get_permissions = read_only_or(IsJimboAdmin)
+    permission_classes = [IsMtaaLeader]
+    get_permissions = read_only_or(IsMtaaLeader)
 
 
 class MtaaViewSet(viewsets.ModelViewSet):
