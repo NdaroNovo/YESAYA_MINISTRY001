@@ -30,7 +30,7 @@ export default function MitaaScreen({ navigation }: Props) {
   const [editing, setEditing] = useState<Mtaa | null>(null);
   const [form, setForm] = useState({ name: "", leader_name: "", phone: "", location: "", jimbo: "" });
   const [jimboModalVisible, setJimboModalVisible] = useState(false);
-  const [jimboForm, setJimboForm] = useState({ name: "", district: "", region: "", address: "", phone: "", email: "" });
+  const [jimboForm, setJimboForm] = useState({ name: "", address: "", region: "Tanzania" });
   const [savingJimbo, setSavingJimbo] = useState(false);
   const { user } = useAuthStore();
   const canWrite = user?.role !== "viewer";
@@ -108,7 +108,7 @@ export default function MitaaScreen({ navigation }: Props) {
   };
 
   const openAddJimbo = () => {
-    setJimboForm({ name: "", district: "", region: "", address: "", phone: "", email: "" });
+    setJimboForm({ name: "", address: "", region: "Tanzania" });
     setJimboModalVisible(true);
   };
 
@@ -254,36 +254,16 @@ export default function MitaaScreen({ navigation }: Props) {
                 placeholder="Mfano: Jimbo la Kaskazini"
               />
               <Input
-                label="Wilaya"
-                value={jimboForm.district}
-                onChangeText={(t) => setJimboForm({ ...jimboForm, district: t })}
-                placeholder="Weka jina la wilaya"
-              />
-              <Input
-                label="Mkoa"
-                value={jimboForm.region}
-                onChangeText={(t) => setJimboForm({ ...jimboForm, region: t })}
-                placeholder="Weka jina la mkoa"
-              />
-              <Input
-                label="Anwani"
+                label="Makao Makuu"
                 value={jimboForm.address}
                 onChangeText={(t) => setJimboForm({ ...jimboForm, address: t })}
-                placeholder="Weka anwani"
+                placeholder="Mfano: Dar es Salaam"
               />
               <Input
-                label="Simu"
-                value={jimboForm.phone}
-                onChangeText={(t) => setJimboForm({ ...jimboForm, phone: t })}
-                keyboardType="phone-pad"
-                placeholder="Weka nambari ya simu"
-              />
-              <Input
-                label="Barua pepe"
-                value={jimboForm.email}
-                onChangeText={(t) => setJimboForm({ ...jimboForm, email: t })}
-                keyboardType="email-address"
-                placeholder="Weka barua pepe"
+                label="Nchi"
+                value={jimboForm.region}
+                onChangeText={(t) => setJimboForm({ ...jimboForm, region: t })}
+                placeholder="Mfano: Tanzania"
               />
 
               <View style={styles.modalActions}>
