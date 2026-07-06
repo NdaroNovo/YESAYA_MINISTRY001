@@ -1,6 +1,6 @@
 from rest_framework import viewsets, status
 from rest_framework.decorators import api_view, permission_classes, action
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -91,8 +91,10 @@ class UserViewSet(viewsets.ModelViewSet):
 class JimboViewSet(viewsets.ModelViewSet):
     queryset = Jimbo.objects.all()
     serializer_class = JimboSerializer
-    permission_classes = [IsMtaaLeader]
-    get_permissions = read_only_or(IsMtaaLeader)
+    permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        return [IsAuthenticated()]
 
 
 class MtaaViewSet(viewsets.ModelViewSet):
