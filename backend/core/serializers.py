@@ -41,7 +41,7 @@ class EvangelismCustomFieldSerializer(serializers.ModelSerializer):
 
 
 class EvangelismRecordSerializer(serializers.ModelSerializer):
-    custom_fields = EvangelismCustomFieldSerializer(many=True)
+    custom_fields = EvangelismCustomFieldSerializer(many=True, required=False, default=[])
 
     class Meta:
         model = EvangelismRecord
@@ -54,6 +54,20 @@ class EvangelismRecordSerializer(serializers.ModelSerializer):
         read_only_fields = [
             "recorded_by", "created_at", "updated_at", "location_captured_at",
         ]
+        validators = []  # ondoa unique_together validator wa default
+
+    def validate(self, data):
+        church = data.get("church") or (self.instance.church if self.instance else None)
+        month = data.get("month") or (self.instance.month if self.instance else None)
+        year = data.get("year") or (self.instance.year if self.instance else None)
+        qs = EvangelismRecord.objects.filter(church=church, month=month, year=year)
+        if self.instance:
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise serializers.ValidationError(
+                {"non_field_errors": [f"Taarifa ya {month}/{year} kwa kanisa hili ipo tayari. Hariri badala ya kuunda mpya."]}
+            )
+        return data
 
     def _set_location_timestamp(self, validated_data):
         if validated_data.get("latitude") and validated_data.get("longitude"):
