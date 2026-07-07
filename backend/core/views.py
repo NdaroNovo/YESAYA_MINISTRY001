@@ -100,8 +100,10 @@ class JimboViewSet(viewsets.ModelViewSet):
 class MtaaViewSet(viewsets.ModelViewSet):
     queryset = Mtaa.objects.filter(is_active=True)
     serializer_class = MtaaSerializer
-    permission_classes = [IsMtaaLeader]
-    get_permissions = read_only_or(IsMtaaLeader)
+    permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        return [IsAuthenticated()]
 
     def get_queryset(self):
         user = self.request.user
@@ -113,8 +115,10 @@ class MtaaViewSet(viewsets.ModelViewSet):
 class ChurchViewSet(viewsets.ModelViewSet):
     queryset = Church.objects.filter(is_active=True)
     serializer_class = ChurchSerializer
-    permission_classes = [IsChurchLeader]
-    get_permissions = read_only_or(IsChurchLeader)
+    permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        return [IsAuthenticated()]
 
     def get_queryset(self):
         user = self.request.user
@@ -132,8 +136,10 @@ class ChurchViewSet(viewsets.ModelViewSet):
 class EvangelismRecordViewSet(viewsets.ModelViewSet):
     queryset = EvangelismRecord.objects.all()
     serializer_class = EvangelismRecordSerializer
-    permission_classes = [IsChurchLeader]
-    get_permissions = read_only_or(IsChurchLeader)
+    permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        return [IsAuthenticated()]
 
     def get_queryset(self):
         user = self.request.user
@@ -158,8 +164,10 @@ class OfferingTypeViewSet(viewsets.ModelViewSet):
 class OfferingViewSet(viewsets.ModelViewSet):
     queryset = Offering.objects.all()
     serializer_class = OfferingSerializer
-    permission_classes = [IsChurchLeader]
-    get_permissions = read_only_or(IsChurchLeader)
+    permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        return [IsAuthenticated()]
 
     def get_queryset(self):
         user = self.request.user
