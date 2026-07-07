@@ -144,13 +144,19 @@ class EvangelismRecordViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         qs = self.queryset
+        church_id = self.request.query_params.get("church")
+        mtaa_id = self.request.query_params.get("mtaa")
+        jimbo_id = self.request.query_params.get("jimbo")
+        if church_id:
+            return qs.filter(church_id=church_id)
+        if mtaa_id:
+            return qs.filter(church__mtaa_id=mtaa_id)
+        if jimbo_id:
+            return qs.filter(church__mtaa__jimbo_id=jimbo_id)
         if user.role == "church_leader" and user.assigned_church:
             return qs.filter(church_id=user.assigned_church_id)
         if user.role == "mtaa_leader" and user.assigned_mtaa:
             return qs.filter(church__mtaa_id=user.assigned_mtaa_id)
-        church_id = self.request.query_params.get("church")
-        if church_id:
-            qs = qs.filter(church_id=church_id)
         return qs
 
 
@@ -172,13 +178,19 @@ class OfferingViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         qs = self.queryset
+        church_id = self.request.query_params.get("church")
+        mtaa_id = self.request.query_params.get("mtaa")
+        jimbo_id = self.request.query_params.get("jimbo")
+        if church_id:
+            return qs.filter(church_id=church_id)
+        if mtaa_id:
+            return qs.filter(church__mtaa_id=mtaa_id)
+        if jimbo_id:
+            return qs.filter(church__mtaa__jimbo_id=jimbo_id)
         if user.role == "church_leader" and user.assigned_church:
             return qs.filter(church_id=user.assigned_church_id)
         if user.role == "mtaa_leader" and user.assigned_mtaa:
             return qs.filter(church__mtaa_id=user.assigned_mtaa_id)
-        church_id = self.request.query_params.get("church")
-        if church_id:
-            qs = qs.filter(church_id=church_id)
         return qs
 
 

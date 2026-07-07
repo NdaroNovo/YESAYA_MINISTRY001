@@ -71,32 +71,34 @@ export default function ReportsScreen() {
     : churchList;
 
   const generateReport = useCallback(async () => {
+    if (reportType === "kanisa" && !selectedChurch) {
+      Alert.alert("Tafadhali", "Chagua kanisa kwanza.");
+      return;
+    }
+    if (reportType === "mtaa" && !selectedMtaa) {
+      Alert.alert("Tafadhali", "Chagua mtaa kwanza.");
+      return;
+    }
+    if (reportType === "jimbo" && !selectedJimbo) {
+      Alert.alert("Tafadhali", "Chagua jimbo kwanza.");
+      return;
+    }
     setLoading(true);
     try {
-      let evData: EvangelismRecord[] = [];
-      let offData: Offering[] = [];
+      const filterParams =
+        reportType === "kanisa"
+          ? { church: parseInt(selectedChurch, 10) }
+          : reportType === "mtaa"
+          ? { mtaa: parseInt(selectedMtaa, 10) }
+          : { jimbo: parseInt(selectedJimbo, 10) };
 
-      if (reportType === "kanisa" && selectedChurch) {
-        const [er, or] = await Promise.all([
-          evangelismApi.get(parseInt(selectedChurch, 10)),
-          offeringApi.get(parseInt(selectedChurch, 10)),
-        ]);
-        evData = er.data;
-        offData = or.data;
-      } else if (reportType === "mtaa" && selectedMtaa) {
-        const churches = churchList.filter((c) => c.mtaa.toString() === selectedMtaa);
-        const results = await Promise.all(churches.map((c) => Promise.all([
-          evangelismApi.get(c.id), offeringApi.get(c.id),
-        ])));
-        results.forEach(([er, or]) => { evData.push(...er.data); offData.push(...or.data); });
-      } else if (reportType === "jimbo" && selectedJimbo) {
-        const mtaas = mtaaList.filter((m) => m.jimbo.toString() === selectedJimbo);
-        const churches = churchList.filter((c) => mtaas.some((m) => m.id === c.mtaa));
-        const results = await Promise.all(churches.map((c) => Promise.all([
-          evangelismApi.get(c.id), offeringApi.get(c.id),
-        ])));
-        results.forEach(([er, or]) => { evData.push(...er.data); offData.push(...or.data); });
-      }
+      const [er, or] = await Promise.all([
+        evangelismApi.getByFilter(filterParams),
+        offeringApi.getByFilter(filterParams),
+      ]);
+
+      let evData = er.data;
+      let offData = or.data;
 
       if (month) {
         evData = evData.filter((e) => e.month.toString() === month && e.year.toString() === year);
@@ -111,12 +113,12 @@ export default function ReportsScreen() {
       setGenerated(true);
       notify("Ripoti imetengenezwa! Unaweza kushare au kuprint.");
     } catch {
-      Alert.alert("Kosa", "Imeshindwa kupakia taarifa.");
+      Alert.alert("Kosa", "Imeshindwa kupakia taarifa. Hakikisha umeunganishwa na mtandao.");
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [reportType, selectedChurch, selectedMtaa, selectedJimbo, month, year, mtaaList, churchList]);
+  }, [reportType, selectedChurch, selectedMtaa, selectedJimbo, month, year]);
 
   const evTotals = {
     baptized: evangelism.reduce((s, e) => s + e.baptized, 0),

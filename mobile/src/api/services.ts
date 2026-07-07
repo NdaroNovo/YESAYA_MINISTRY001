@@ -67,6 +67,9 @@ export const evangelismApi = {
   get: (churchId?: number) =>
     api.get<ListResponse<EvangelismRecord>>("/evangelism/", { params: churchId ? { church: churchId } : {} })
       .then((r) => ({ ...r, data: toArray(r.data) })),
+  getByFilter: (params: { church?: number; mtaa?: number; jimbo?: number }) =>
+    api.get<ListResponse<EvangelismRecord>>("/evangelism/", { params })
+      .then((r) => ({ ...r, data: toArray(r.data) })),
   create: (data: Partial<EvangelismRecord>) => api.post<EvangelismRecord>("/evangelism/", data),
   update: (id: number, data: Partial<EvangelismRecord>) =>
     api.patch<EvangelismRecord>(`/evangelism/${id}/`, data),
@@ -80,6 +83,9 @@ export const offeringTypeApi = {
 export const offeringApi = {
   get: (churchId?: number) =>
     api.get<ListResponse<Offering>>("/offerings/", { params: churchId ? { church: churchId } : {} })
+      .then((r) => ({ ...r, data: toArray(r.data) })),
+  getByFilter: (params: { church?: number; mtaa?: number; jimbo?: number }) =>
+    api.get<ListResponse<Offering>>("/offerings/", { params })
       .then((r) => ({ ...r, data: toArray(r.data) })),
   create: (data: Partial<Offering>) => api.post<Offering>("/offerings/", data),
   update: (id: number, data: Partial<Offering>) => api.patch<Offering>(`/offerings/${id}/`, data),
