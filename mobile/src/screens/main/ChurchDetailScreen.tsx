@@ -160,8 +160,12 @@ export default function ChurchDetailScreen({ route, navigation }: Props) {
       }
       setModalVisible(false);
       loadData();
-    } catch {
-      Alert.alert("Kosa", "Imeshindwa kuhifadhi taarifa ya uinjilisti.");
+      Alert.alert("✅ Imefanikiwa", "Taarifa ya uinjilisti imehifadhiwa.");
+    } catch (err: any) {
+      const msg = err?.response?.data
+        ? JSON.stringify(err.response.data)
+        : "Imeshindwa kuhifadhi taarifa ya uinjilisti.";
+      Alert.alert("Kosa", msg);
     }
   };
 
@@ -186,8 +190,12 @@ export default function ChurchDetailScreen({ route, navigation }: Props) {
       }
       setModalVisible(false);
       loadData();
-    } catch {
-      Alert.alert("Kosa", "Imeshindwa kuhifadhi toleo.");
+      Alert.alert("✅ Imefanikiwa", "Toleo limehifadhiwa.");
+    } catch (err: any) {
+      const msg = err?.response?.data
+        ? JSON.stringify(err.response.data)
+        : "Imeshindwa kuhifadhi toleo.";
+      Alert.alert("Kosa", msg);
     }
   };
 
