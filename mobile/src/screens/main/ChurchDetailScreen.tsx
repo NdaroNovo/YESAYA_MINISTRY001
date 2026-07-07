@@ -27,6 +27,26 @@ type TabType = "info" | "evangelism" | "offerings";
 const CURRENT_YEAR = new Date().getFullYear().toString();
 const CURRENT_MONTH = (new Date().getMonth() + 1).toString();
 
+const MONTH_OPTIONS = [
+  { label: "Januari", value: "1" },
+  { label: "Februari", value: "2" },
+  { label: "Machi", value: "3" },
+  { label: "Aprili", value: "4" },
+  { label: "Mei", value: "5" },
+  { label: "Juni", value: "6" },
+  { label: "Julai", value: "7" },
+  { label: "Agosti", value: "8" },
+  { label: "Septemba", value: "9" },
+  { label: "Oktoba", value: "10" },
+  { label: "Novemba", value: "11" },
+  { label: "Desemba", value: "12" },
+];
+
+const YEAR_OPTIONS = Array.from({ length: 10 }, (_, i) => {
+  const y = (new Date().getFullYear() - i).toString();
+  return { label: y, value: y };
+});
+
 export default function ChurchDetailScreen({ route, navigation }: Props) {
   const { church: initialChurch, mtaa } = route.params;
   const [church, setChurch] = useState<Church>(initialChurch);
@@ -256,7 +276,7 @@ export default function ChurchDetailScreen({ route, navigation }: Props) {
             {MONTHS[item.month - 1] || `Mwezi ${item.month}`} {item.year}
           </Text>
           <Text style={styles.itemMeta}>Waliobatizwa: <Text style={styles.highlight}>{item.baptized}</Text></Text>
-          <Text style={styles.itemMeta}>Waliokombolewa: <Text style={styles.highlight}>{item.converted}</Text></Text>
+          <Text style={styles.itemMeta}>Walioongolewa: <Text style={styles.highlight}>{item.converted}</Text></Text>
           <Text style={styles.itemMeta}>Waliotembelewa: {item.visited}</Text>
           <Text style={styles.itemMeta}>Waliosaidika: {item.supported}</Text>
           {item.comments ? <Text style={styles.itemMeta}>Maoni: {item.comments}</Text> : null}
@@ -367,10 +387,10 @@ export default function ChurchDetailScreen({ route, navigation }: Props) {
 
               {isEvModal ? (
                 <>
-                  <Input label="Mwezi (1-12) *" value={evForm.month} onChangeText={(t) => setEvForm({ ...evForm, month: t })} keyboardType="numeric" />
-                  <Input label="Mwaka *" value={evForm.year} onChangeText={(t) => setEvForm({ ...evForm, year: t })} keyboardType="numeric" />
+                  <SelectPicker label="Mwezi *" options={MONTH_OPTIONS} value={evForm.month} onChange={(v) => setEvForm({ ...evForm, month: v })} />
+                  <SelectPicker label="Mwaka *" options={YEAR_OPTIONS} value={evForm.year} onChange={(v) => setEvForm({ ...evForm, year: v })} />
                   <Input label="Waliobatizwa" value={evForm.baptized} onChangeText={(t) => setEvForm({ ...evForm, baptized: t })} keyboardType="numeric" placeholder="0" />
-                  <Input label="Waliokombolewa" value={evForm.converted} onChangeText={(t) => setEvForm({ ...evForm, converted: t })} keyboardType="numeric" placeholder="0" />
+                  <Input label="Walioongolewa" value={evForm.converted} onChangeText={(t) => setEvForm({ ...evForm, converted: t })} keyboardType="numeric" placeholder="0" />
                   <Input label="Waliotembelewa" value={evForm.visited} onChangeText={(t) => setEvForm({ ...evForm, visited: t })} keyboardType="numeric" placeholder="0" />
                   <Input label="Waliosaidika" value={evForm.supported} onChangeText={(t) => setEvForm({ ...evForm, supported: t })} keyboardType="numeric" placeholder="0" />
                   <Input label="Maoni" value={evForm.comments} onChangeText={(t) => setEvForm({ ...evForm, comments: t })} placeholder="Maelezo zaidi..." />
@@ -385,8 +405,8 @@ export default function ChurchDetailScreen({ route, navigation }: Props) {
                     emptyText="Hakuna aina za matoleo zilizosajiliwa."
                   />
                   <Input label="Kiasi (TSh) *" value={offForm.amount} onChangeText={(t) => setOffForm({ ...offForm, amount: t })} keyboardType="numeric" placeholder="0" />
-                  <Input label="Mwezi (1-12)" value={offForm.month} onChangeText={(t) => setOffForm({ ...offForm, month: t })} keyboardType="numeric" />
-                  <Input label="Mwaka" value={offForm.year} onChangeText={(t) => setOffForm({ ...offForm, year: t })} keyboardType="numeric" />
+                  <SelectPicker label="Mwezi" options={MONTH_OPTIONS} value={offForm.month} onChange={(v) => setOffForm({ ...offForm, month: v })} />
+                  <SelectPicker label="Mwaka" options={YEAR_OPTIONS} value={offForm.year} onChange={(v) => setOffForm({ ...offForm, year: v })} />
                   <Input label="Maoni" value={offForm.notes} onChangeText={(t) => setOffForm({ ...offForm, notes: t })} placeholder="Maelezo zaidi..." />
                 </>
               )}
