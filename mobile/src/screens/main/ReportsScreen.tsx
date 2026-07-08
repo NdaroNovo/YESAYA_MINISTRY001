@@ -148,8 +148,9 @@ export default function ReportsScreen() {
       year: "numeric", month: "long", day: "numeric",
       hour: "2-digit", minute: "2-digit",
     });
-    const orgName = "KANISA LA YESAYA MINISTRY";
+    const entityName = getLabel();
     const levelLabel = reportType === "jimbo" ? "JIMBO" : reportType === "mtaa" ? "MTAA" : "KANISA";
+    const refCode = `${levelLabel.charAt(0)}${year}${month ? month.toString().padStart(2,"0") : "00"}`;
 
     // ── Mchanganuo wa Matoleo kwa aina ──────────────────────────────
     const offByType: Record<number, { name: string; kind: string; rows: Offering[]; total: number; churchTotal: number; fieldTotal: number }> = {};
@@ -174,23 +175,21 @@ export default function ReportsScreen() {
     const offTypeBlocks = Object.values(offByType).map((grp, idx) => {
       const rows = grp.rows.map((o, i) => `
         <tr>
-          <td style="text-align:center">${i + 1}</td>
+          <td class="ctr">${i + 1}</td>
           <td>${MONTHS[o.month] || o.month} ${o.year}</td>
-          <td style="text-align:right">TSh ${formatMoney(parseFloat(o.amount))}</td>
-          <td style="text-align:right">TSh ${formatMoney(parseFloat(o.church_share || "0"))}</td>
-          <td style="text-align:right">TSh ${formatMoney(parseFloat(o.field_share || "0"))}</td>
-          <td>${o.notes || "—"}</td>
+          <td class="num">${formatMoney(parseFloat(o.amount))}</td>
+          <td class="num">${formatMoney(parseFloat(o.church_share || "0"))}</td>
+          <td class="num">${formatMoney(parseFloat(o.field_share || "0"))}</td>
+          <td style="font-size:7.5pt">${o.notes || "—"}</td>
         </tr>`).join("");
       return `
-        <tr class="type-header">
-          <td colspan="6">${idx + 1}. ${grp.name.toUpperCase()}${grp.kind ? ` (${grp.kind})` : ""}</td>
-        </tr>
+        <tr class="tr-type"><th colspan="6">${idx + 1}. ${grp.name.toUpperCase()}${grp.kind ? ` — ${grp.kind}` : ""}</th></tr>
         ${rows}
-        <tr class="sub-total">
-          <td colspan="2" style="text-align:right;font-weight:bold">Jumla ndogo — ${grp.name}:</td>
-          <td style="text-align:right;font-weight:bold">TSh ${formatMoney(grp.total)}</td>
-          <td style="text-align:right;font-weight:bold">TSh ${formatMoney(grp.churchTotal)}</td>
-          <td style="text-align:right;font-weight:bold">TSh ${formatMoney(grp.fieldTotal)}</td>
+        <tr class="tr-sub">
+          <td colspan="2" class="num">Jumla ndogo:</td>
+          <td class="num">${formatMoney(grp.total)}</td>
+          <td class="num">${formatMoney(grp.churchTotal)}</td>
+          <td class="num">${formatMoney(grp.fieldTotal)}</td>
           <td></td>
         </tr>`;
     }).join("");
@@ -223,173 +222,177 @@ export default function ReportsScreen() {
 <meta name="viewport" content="width=device-width"/>
 <title>${title}</title>
 <style>
-  @page { size: A4; margin: 18mm 14mm 18mm 14mm; }
+  @page { size: A4; margin: 20mm 15mm 20mm 15mm; }
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:"Arial",sans-serif;font-size:10pt;color:#111;background:#fff;line-height:1.4}
+  body{font-family:Arial,sans-serif;font-size:9.5pt;color:#111;background:#fff;line-height:1.45}
 
   /* ── HEADER ── */
-  .report-header{border-bottom:3px solid #1a237e;padding-bottom:10px;margin-bottom:14px;display:flex;align-items:center;gap:14px}
-  .org-logo{width:52px;height:52px;background:#1a237e;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;color:#f59e0b;font-weight:bold;flex-shrink:0;text-align:center;line-height:52px}
-  .org-info{flex:1}
-  .org-name{font-size:14pt;font-weight:bold;color:#1a237e;letter-spacing:1px}
-  .org-sub{font-size:8.5pt;color:#555;margin-top:2px}
-  .report-ref{text-align:right;font-size:8pt;color:#777;min-width:120px}
+  .rh{border-bottom:3px solid #1a237e;padding-bottom:8px;margin-bottom:12px;display:table;width:100%}
+  .rh-left{display:table-cell;vertical-align:middle;width:70%}
+  .rh-right{display:table-cell;vertical-align:middle;text-align:right;font-size:7.5pt;color:#555;width:30%}
+  .rh-title{font-size:15pt;font-weight:bold;color:#1a237e;letter-spacing:0.5px}
+  .rh-sub{font-size:8pt;color:#666;margin-top:2px}
 
   /* ── TITLE BLOCK ── */
-  .title-block{background:#1a237e;color:#fff;text-align:center;padding:10px 16px;border-radius:4px;margin-bottom:10px}
-  .title-block h1{font-size:13pt;font-weight:bold;letter-spacing:0.5px}
-  .title-block .sub{font-size:9pt;margin-top:4px;opacity:0.88}
+  .tb{background:#1a237e;color:#fff;text-align:center;padding:9px 14px;margin-bottom:10px}
+  .tb h1{font-size:12pt;font-weight:bold;letter-spacing:0.3px;margin-bottom:4px}
+  .tb-meta{font-size:8pt;opacity:0.88;line-height:1.6}
 
-  /* ── META INFO ── */
-  .meta-grid{display:flex;gap:0;border:1px solid #ccc;border-radius:4px;margin-bottom:14px;overflow:hidden}
-  .meta-cell{flex:1;padding:6px 10px;border-right:1px solid #ccc;font-size:9pt}
-  .meta-cell:last-child{border-right:none}
-  .meta-cell .lbl{color:#777;font-size:8pt;margin-bottom:2px}
-  .meta-cell .val{font-weight:bold;color:#1a237e}
+  /* ── META TABLE ── */
+  .meta-tbl{width:100%;border-collapse:collapse;margin-bottom:12px;font-size:8.5pt}
+  .meta-tbl td{padding:4px 8px;border:1px solid #ddd}
+  .meta-tbl .lbl{background:#e8eaf6;color:#333;font-weight:bold;width:30%;white-space:nowrap}
+  .meta-tbl .val{color:#1a237e;font-weight:bold}
 
   /* ── SECTION HEADING ── */
-  .section-title{font-size:11pt;font-weight:bold;color:#fff;background:#1a237e;padding:6px 12px;margin:16px 0 0 0;border-radius:4px 4px 0 0;letter-spacing:0.3px}
-  .section-sub{font-size:8.5pt;color:#555;background:#e8eaf6;padding:4px 12px;margin-bottom:6px;border-radius:0 0 4px 4px;border:1px solid #c5cae9;border-top:none}
+  .sh{font-size:10pt;font-weight:bold;color:#fff;background:#1a237e;padding:5px 10px;margin:14px 0 0 0;letter-spacing:0.2px}
+  .ss{font-size:7.5pt;color:#444;background:#eef0fb;padding:3px 10px;margin-bottom:5px;border:1px solid #c5cae9;border-top:none}
 
-  /* ── SUMMARY BOXES ── */
-  .kpi-row{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
-  .kpi{flex:1;min-width:90px;border:1px solid #e0e0e0;border-radius:6px;padding:8px 10px;text-align:center;background:#fafafa}
-  .kpi.money{background:#e8f5e9;border-color:#a5d6a7}
-  .kpi.ev{background:#e3f2fd;border-color:#90caf9}
-  .kpi-val{font-size:14pt;font-weight:bold;color:#1a237e}
-  .kpi-lbl{font-size:7.5pt;color:#555;margin-top:3px}
+  /* ── KPI SUMMARY TABLE ── */
+  .kpi-tbl{width:100%;border-collapse:collapse;margin-bottom:12px}
+  .kpi-tbl td{border:1px solid #ddd;padding:6px 8px;text-align:center;vertical-align:middle}
+  .kpi-tbl .kpi-lbl{font-size:7pt;color:#555;display:block;margin-top:2px}
+  .kpi-tbl .kpi-val{font-size:11pt;font-weight:bold;color:#1a237e;display:block}
+  .kpi-tbl .money{background:#e8f5e9}
+  .kpi-tbl .ev{background:#e3f2fd}
 
-  /* ── TABLES ── */
-  table{width:100%;border-collapse:collapse;font-size:9pt;margin-bottom:4px}
-  thead tr{background:#1a237e}
-  thead th{color:#fff;padding:6px 7px;text-align:left;font-size:8.5pt;font-weight:bold;border:1px solid #283593}
-  tbody td{padding:5px 7px;border:1px solid #e0e0e0;vertical-align:top}
-  tbody tr:nth-child(even){background:#f5f7ff}
-  tbody tr:hover{background:#fffde7}
-  .type-header td{background:#283593;color:#fff;font-weight:bold;font-size:9pt;padding:5px 7px;border:1px solid #1a237e}
-  .sub-total td{background:#e8eaf6;color:#1a237e;border:1px solid #c5cae9;font-size:9pt}
-  .grand-total td{background:#1a237e;color:#fff;font-weight:bold;font-size:9.5pt;padding:6px 7px;border:1px solid #0d1b6e}
+  /* ── MAIN TABLES ── */
+  table.data{width:100%;border-collapse:collapse;font-size:8.5pt;margin-bottom:4px}
+  table.data thead tr{background:#1a237e}
+  table.data thead th{color:#fff;padding:5px 6px;text-align:left;font-size:8pt;border:1px solid #283593}
+  table.data tbody td{padding:4px 6px;border:1px solid #ddd;vertical-align:middle}
+  table.data tbody tr:nth-child(even){background:#f7f8ff}
+  .tr-type th{background:#3949ab;color:#fff;font-size:8pt;padding:4px 6px;text-align:left;border:1px solid #283593;letter-spacing:0.2px}
+  .tr-sub td{background:#e8eaf6;color:#1a237e;font-weight:bold;font-size:8pt;border:1px solid #c5cae9}
+  .tr-grand td{background:#1a237e;color:#fff;font-weight:bold;font-size:8.5pt;padding:5px 6px;border:1px solid #0d1b6e}
+  .num{text-align:right;white-space:nowrap}
+  .ctr{text-align:center}
 
   /* ── FOOTER ── */
-  .report-footer{margin-top:24px;border-top:2px solid #1a237e;padding-top:10px;display:flex;justify-content:space-between;align-items:flex-end;font-size:8.5pt;color:#555}
-  .sig-block{text-align:center;width:160px}
-  .sig-line{border-top:1px solid #333;margin-top:40px;font-size:8pt;color:#333}
-  .page-note{text-align:center;font-size:8pt;color:#999;margin-top:10px}
+  .ft{margin-top:20px;border-top:2px solid #1a237e;padding-top:8px;display:table;width:100%;font-size:8pt;color:#555}
+  .ft-left{display:table-cell;vertical-align:bottom;width:50%}
+  .ft-right{display:table-cell;vertical-align:bottom;text-align:right;width:50%}
+  .sig{display:inline-block;text-align:center;width:150px;margin-left:30px}
+  .sig-line{border-top:1px solid #555;margin-top:36px;padding-top:3px;font-size:7.5pt}
+  .pg{text-align:center;font-size:7.5pt;color:#aaa;margin-top:8px}
 </style>
-</head>
-<body>
+</head><body>
 
-<!-- ═══ HEADER ═══ -->
-<div class="report-header">
-  <div class="org-logo">YM</div>
-  <div class="org-info">
-    <div class="org-name">${orgName}</div>
-    <div class="org-sub">Taarifa Rasmi ya Kifedha na Uinjilisti</div>
+<!-- HEADER -->
+<div class="rh">
+  <div class="rh-left">
+    <div class="rh-title">${entityName}</div>
+    <div class="rh-sub">Taarifa Rasmi ya Kifedha na Uinjilisti &nbsp;|&nbsp; ${levelLabel}</div>
   </div>
-  <div class="report-ref">
-    <div>Ref: YM-${year}${month ? `-${month.toString().padStart(2,"0")}` : ""}</div>
+  <div class="rh-right">
+    <div>Kumb: ${refCode}</div>
     <div>Tarehe: ${now}</div>
   </div>
 </div>
 
-<!-- ═══ TITLE BLOCK ═══ -->
-<div class="title-block">
+<!-- TITLE -->
+<div class="tb">
   <h1>${title}</h1>
-  <div class="sub">Kipindi: ${periodLabel} &nbsp;|&nbsp; Kiwango: ${levelLabel} &nbsp;|&nbsp; ${getLabel()}</div>
+  <div class="tb-meta">
+    Kipindi: <strong>${periodLabel}</strong>&nbsp;&nbsp;|&nbsp;&nbsp;
+    Kiwango: <strong>${levelLabel}</strong>&nbsp;&nbsp;|&nbsp;&nbsp;
+    ${entityName}
+  </div>
 </div>
 
-<!-- ═══ META ═══ -->
-<div class="meta-grid">
-  <div class="meta-cell"><div class="lbl">Shirika</div><div class="val">${orgName}</div></div>
-  <div class="meta-cell"><div class="lbl">Kiwango cha Taarifa</div><div class="val">${levelLabel}</div></div>
-  <div class="meta-cell"><div class="lbl">Jina</div><div class="val">${getLabel()}</div></div>
-  <div class="meta-cell"><div class="lbl">Kipindi</div><div class="val">${periodLabel}</div></div>
-  <div class="meta-cell"><div class="lbl">Imetolewa</div><div class="val">${now}</div></div>
-</div>
+<!-- META INFO -->
+<table class="meta-tbl">
+  <tr><td class="lbl">Kiwango cha Taarifa</td><td class="val">${levelLabel}</td>
+      <td class="lbl">Jina / Eneo</td><td class="val">${entityName}</td></tr>
+  <tr><td class="lbl">Kipindi cha Taarifa</td><td class="val">${periodLabel}</td>
+      <td class="lbl">Tarehe ya Kutoa</td><td class="val">${now}</td></tr>
+  <tr><td class="lbl">Nambari ya Kumbukumbu</td><td class="val">${refCode}</td>
+      <td class="lbl">Aina ya Taarifa</td><td class="val">Kifedha na Uinjilisti</td></tr>
+</table>
 
-<!-- ═══ KPI SUMMARY ═══ -->
-<div class="kpi-row">
-  <div class="kpi money"><div class="kpi-val">TSh ${formatMoney(offTotal)}</div><div class="kpi-lbl">Jumla Matoleo Yote</div></div>
-  <div class="kpi money"><div class="kpi-val">TSh ${formatMoney(churchGrand)}</div><div class="kpi-lbl">Sehemu ya Kanisa</div></div>
-  <div class="kpi money"><div class="kpi-val">TSh ${formatMoney(fieldGrand)}</div><div class="kpi-lbl">Inayoelekea Jimboni</div></div>
-  <div class="kpi ev"><div class="kpi-val">${evTotals.baptized}</div><div class="kpi-lbl">Waliobatizwa</div></div>
-  <div class="kpi ev"><div class="kpi-val">${evTotals.converted}</div><div class="kpi-lbl">Walioongolewa</div></div>
-  <div class="kpi ev"><div class="kpi-val">${evTotals.visited}</div><div class="kpi-lbl">Waliotembelewa</div></div>
-  <div class="kpi ev"><div class="kpi-val">${evTotals.supported}</div><div class="kpi-lbl">Waliosaidika</div></div>
-</div>
+<!-- KPI MUHTASARI -->
+<div class="sh">MUHTASARI WA JUMLA</div>
+<div class="ss">Nambari kuu za kipindi kilichochaguliwa</div>
+<table class="kpi-tbl">
+  <tr>
+    <td class="money"><span class="kpi-val">${formatMoney(offTotal)}</span><span class="kpi-lbl">Jumla Matoleo (TSh)</span></td>
+    <td class="money"><span class="kpi-val">${formatMoney(churchGrand)}</span><span class="kpi-lbl">Sehemu ya Kanisa (TSh)</span></td>
+    <td class="money"><span class="kpi-val">${formatMoney(fieldGrand)}</span><span class="kpi-lbl">Inayoelekea Jimboni (TSh)</span></td>
+    <td class="ev"><span class="kpi-val">${evTotals.baptized}</span><span class="kpi-lbl">Waliobatizwa</span></td>
+    <td class="ev"><span class="kpi-val">${evTotals.converted}</span><span class="kpi-lbl">Walioongolewa</span></td>
+    <td class="ev"><span class="kpi-val">${evTotals.visited}</span><span class="kpi-lbl">Waliotembelewa</span></td>
+    <td class="ev"><span class="kpi-val">${evTotals.supported}</span><span class="kpi-lbl">Waliosaidika</span></td>
+  </tr>
+</table>
 
-<!-- ═══ SEHEMU 1: MATOLEO ═══ -->
-<div class="section-title">SEHEMU I: TAARIFA ZA MATOLEO</div>
-<div class="section-sub">Mchanganuo wa matoleo yote imegawanywa kwa aina — inayoelekea Jimboni na sehemu ya Kanisa imeorodheshwa</div>
-<table>
+<!-- SEHEMU I: MATOLEO -->
+<div class="sh">SEHEMU I: TAARIFA ZA MATOLEO</div>
+<div class="ss">Mchanganuo kwa aina ya toleo — sehemu ya Kanisa na inayoelekea Jimboni imeonyeshwa kwa kila aina</div>
+<table class="data">
   <thead>
     <tr>
-      <th style="width:28px">#</th>
-      <th>Kipindi</th>
-      <th style="text-align:right">Jumla (TSh)</th>
-      <th style="text-align:right">Kanisa (TSh)</th>
-      <th style="text-align:right">Jimbo (TSh)</th>
+      <th style="width:22px" class="ctr">#</th>
+      <th style="width:90px">Kipindi</th>
+      <th class="num">Jumla (TSh)</th>
+      <th class="num">Kanisa (TSh)</th>
+      <th class="num">Jimbo (TSh)</th>
       <th>Maelezo</th>
     </tr>
   </thead>
   <tbody>
     ${offTypeBlocks}
     ${offEmpty}
-    ${offerings.length > 0 ? `<tr class="grand-total">
-      <td colspan="2" style="text-align:right">JUMLA KUU — MATOLEO YOTE:</td>
-      <td style="text-align:right">TSh ${formatMoney(offTotal)}</td>
-      <td style="text-align:right">TSh ${formatMoney(churchGrand)}</td>
-      <td style="text-align:right">TSh ${formatMoney(fieldGrand)}</td>
+    ${offerings.length > 0 ? `<tr class="tr-grand">
+      <td colspan="2" class="num">JUMLA KUU — MATOLEO YOTE</td>
+      <td class="num">${formatMoney(offTotal)}</td>
+      <td class="num">${formatMoney(churchGrand)}</td>
+      <td class="num">${formatMoney(fieldGrand)}</td>
       <td></td>
     </tr>` : ""}
   </tbody>
 </table>
 
-<!-- ═══ SEHEMU 2: UINJILISTI ═══ -->
-<div class="section-title" style="margin-top:20px">SEHEMU II: TAARIFA ZA UINJILISTI</div>
-<div class="section-sub">Rekodi za shughuli za kiroho na ufuatiliaji wa waumini</div>
-<table>
+<!-- SEHEMU II: UINJILISTI -->
+<div class="sh" style="margin-top:16px">SEHEMU II: TAARIFA ZA UINJILISTI</div>
+<div class="ss">Rekodi za shughuli za kiroho na ufuatiliaji wa waumini kwa kipindi kilichochaguliwa</div>
+<table class="data">
   <thead>
     <tr>
-      <th style="width:28px">#</th>
-      <th>Kipindi</th>
-      <th style="text-align:center">Waliobatizwa</th>
-      <th style="text-align:center">Walioongolewa</th>
-      <th style="text-align:center">Waliotembelewa</th>
-      <th style="text-align:center">Waliosaidika</th>
+      <th style="width:22px" class="ctr">#</th>
+      <th style="width:90px">Kipindi</th>
+      <th class="ctr">Waliobatizwa</th>
+      <th class="ctr">Walioongolewa</th>
+      <th class="ctr">Waliotembelewa</th>
+      <th class="ctr">Waliosaidika</th>
       <th>Maoni</th>
     </tr>
   </thead>
   <tbody>
     ${evRows}
-    ${evangelism.length > 0 ? `<tr class="grand-total">
-      <td colspan="2" style="text-align:right">JUMLA KUU:</td>
-      <td style="text-align:center">${evTotals.baptized}</td>
-      <td style="text-align:center">${evTotals.converted}</td>
-      <td style="text-align:center">${evTotals.visited}</td>
-      <td style="text-align:center">${evTotals.supported}</td>
+    ${evangelism.length > 0 ? `<tr class="tr-grand">
+      <td colspan="2" class="num">JUMLA KUU</td>
+      <td class="ctr">${evTotals.baptized}</td>
+      <td class="ctr">${evTotals.converted}</td>
+      <td class="ctr">${evTotals.visited}</td>
+      <td class="ctr">${evTotals.supported}</td>
       <td></td>
     </tr>` : ""}
   </tbody>
 </table>
 
-<!-- ═══ FOOTER ═══ -->
-<div class="report-footer">
-  <div>
-    <div style="font-weight:bold;color:#1a237e">${orgName}</div>
-    <div>Taarifa imetolewa kwa mfumo wa kielektroniki</div>
-    <div>Ref: YM-${year}${month ? `-${month.toString().padStart(2,"0")}` : ""} | ${periodLabel} | ${levelLabel}: ${getLabel()}</div>
+<!-- FOOTER -->
+<div class="ft">
+  <div class="ft-left">
+    <div><strong>${entityName}</strong> &mdash; ${levelLabel}</div>
+    <div>Kumb: ${refCode} &nbsp;|&nbsp; ${periodLabel}</div>
+    <div style="margin-top:2px;color:#999">Taarifa imetolewa kwa mfumo wa kielektroniki</div>
   </div>
-  <div style="display:flex;gap:40px">
-    <div class="sig-block">
-      <div class="sig-line">Mhusika wa Fedha</div>
-    </div>
-    <div class="sig-block">
-      <div class="sig-line">Msimamizi / Kiongozi</div>
-    </div>
+  <div class="ft-right">
+    <span class="sig"><div class="sig-line">Mhusika wa Fedha</div></span>
+    <span class="sig"><div class="sig-line">Msimamizi / Kiongozi</div></span>
   </div>
 </div>
-<div class="page-note">— Mwisho wa Taarifa — Kimetolewa: ${now} —</div>
+<div class="pg">— Mwisho wa Taarifa &mdash; ${now} —</div>
 
 </body></html>`;
   };
@@ -459,33 +462,33 @@ export default function ReportsScreen() {
           <>
             {/* ── KPI Muhtasari ── */}
             <Card style={styles.summaryCard}>
-              <Text style={styles.sectionTitle}>📊 Muhtasari — {getLabel()} ({periodLabel})</Text>
+              <Text style={styles.sectionTitle}>📊 {getLabel()} — {periodLabel}</Text>
 
-              <Text style={styles.subHeading}>💰 SEHEMU I: MATOLEO</Text>
+              <Text style={styles.subHeading}>💰 Matoleo</Text>
               <View style={styles.summaryGrid}>
                 {[
-                  { label: "Jumla Matoleo", value: `TSh ${formatMoney(offTotal)}`, icon: "cash-multiple", color: "#1a237e" },
-                  { label: "Sehemu ya Kanisa", value: `TSh ${formatMoney(churchGrandTotal)}`, icon: "bank", color: "#43a047" },
-                  { label: "Inayoelekea Jimboni", value: `TSh ${formatMoney(fieldGrandTotal)}`, icon: "arrow-up-circle", color: "#e53935" },
+                  { label: "Jumla", value: `TSh\n${formatMoney(offTotal)}`, icon: "cash-multiple", color: "#1a237e" },
+                  { label: "Kanisa", value: `TSh\n${formatMoney(churchGrandTotal)}`, icon: "bank", color: "#43a047" },
+                  { label: "Jimbo", value: `TSh\n${formatMoney(fieldGrandTotal)}`, icon: "arrow-up-circle", color: "#c62828" },
                 ].map((item) => (
-                  <View key={item.label} style={[styles.summaryBox, { borderLeftWidth: 3, borderLeftColor: item.color }]}>
-                    <Icon name={item.icon} size={18} color={item.color} />
-                    <Text style={[styles.summaryVal, { color: item.color, fontSize: 11 }]}>{item.value}</Text>
+                  <View key={item.label} style={[styles.summaryBox, { borderTopWidth: 3, borderTopColor: item.color }]}>
+                    <Icon name={item.icon} size={16} color={item.color} />
+                    <Text style={[styles.summaryVal, { color: item.color, fontSize: 10, textAlign: "center" }]}>{item.value}</Text>
                     <Text style={styles.summaryLbl}>{item.label}</Text>
                   </View>
                 ))}
               </View>
 
-              <Text style={[styles.subHeading, { marginTop: 10 }]}>🕊️ SEHEMU II: UINJILISTI</Text>
+              <Text style={[styles.subHeading, { marginTop: 10 }]}>🕊️ Uinjilisti</Text>
               <View style={styles.summaryGrid}>
                 {[
-                  { label: "Waliobatizwa", value: evTotals.baptized, icon: "water", color: "#1e88e5" },
-                  { label: "Walioongolewa", value: evTotals.converted, icon: "heart", color: "#e53935" },
-                  { label: "Waliotembelewa", value: evTotals.visited, icon: "walk", color: "#43a047" },
-                  { label: "Waliosaidika", value: evTotals.supported, icon: "hand-heart", color: "#fb8c00" },
+                  { label: "Batizwa", value: evTotals.baptized, icon: "water", color: "#1e88e5" },
+                  { label: "Ongolewa", value: evTotals.converted, icon: "heart", color: "#e53935" },
+                  { label: "Tembelewa", value: evTotals.visited, icon: "walk", color: "#43a047" },
+                  { label: "Saidika", value: evTotals.supported, icon: "hand-heart", color: "#fb8c00" },
                 ].map((item) => (
-                  <View key={item.label} style={[styles.summaryBox, { borderLeftWidth: 3, borderLeftColor: item.color }]}>
-                    <Icon name={item.icon} size={18} color={item.color} />
+                  <View key={item.label} style={[styles.summaryBox, { borderTopWidth: 3, borderTopColor: item.color }]}>
+                    <Icon name={item.icon} size={16} color={item.color} />
                     <Text style={[styles.summaryVal, { color: item.color }]}>{item.value}</Text>
                     <Text style={styles.summaryLbl}>{item.label}</Text>
                   </View>
@@ -641,10 +644,10 @@ const styles = StyleSheet.create({
   typeBtnTextActive: { color: colors.surface },
   genBtn: { marginTop: 8 },
   summaryCard: { marginBottom: 12 },
-  summaryGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  summaryBox: { flex: 1, minWidth: "28%", backgroundColor: colors.background, borderRadius: 8, padding: 10, alignItems: "center" },
-  summaryVal: { fontSize: typography.sizes.md, fontWeight: typography.weights.bold, marginTop: 4 },
-  summaryLbl: { fontSize: 9, color: colors.textMuted, textAlign: "center", marginTop: 2 },
+  summaryGrid: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
+  summaryBox: { flex: 1, minWidth: "30%", backgroundColor: colors.background, borderRadius: 8, padding: 8, alignItems: "center" },
+  summaryVal: { fontSize: typography.sizes.sm, fontWeight: typography.weights.bold, marginTop: 3, textAlign: "center" },
+  summaryLbl: { fontSize: 8, color: colors.textMuted, textAlign: "center", marginTop: 2 },
   tableCard: { marginBottom: 12 },
   tableHeader: { flexDirection: "row", backgroundColor: colors.primary, borderRadius: 6, paddingVertical: 6, paddingHorizontal: 4, marginBottom: 2 },
   th: { flex: 1, color: colors.surface, fontSize: 9, fontWeight: typography.weights.bold, textAlign: "center" },
