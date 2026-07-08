@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -171,27 +171,39 @@ interface SelectPickerProps {
 }
 
 export function SelectPicker({ label, options, value, onChange, emptyText }: SelectPickerProps) {
+  const [open, setOpen] = useState(false);
+  const selectedLabel = options.find((o) => o.value === value)?.label || emptyText || "Chagua...";
   return (
     <View style={styles.inputContainer}>
       <Text style={styles.label}>{label}</Text>
-      {options.length === 0 ? (
-        <Text style={styles.noDataText}>{emptyText || "Hakuna chaguo."}</Text>
-      ) : (
-        options.map((opt) => (
-          <TouchableOpacity
-            key={opt.value}
-            style={[styles.optionRow, value === opt.value && styles.optionRowActive]}
-            onPress={() => onChange(opt.value)}
-            activeOpacity={0.7}
-          >
-            <View style={[styles.radio, value === opt.value && styles.radioActive]}>
-              {value === opt.value && <View style={styles.radioDot} />}
-            </View>
-            <Text style={[styles.optionText, value === opt.value && styles.optionTextActive]}>
-              {opt.label}
-            </Text>
-          </TouchableOpacity>
-        ))
+      <TouchableOpacity
+        style={styles.dropdownBtn}
+        onPress={() => setOpen((v) => !v)}
+        activeOpacity={0.8}
+      >
+        <Text style={styles.dropdownValue} numberOfLines={1}>{selectedLabel}</Text>
+        <Icon name={open ? "chevron-up" : "chevron-down"} size={18} color={colors.textMuted} />
+      </TouchableOpacity>
+      {open && (
+        <ScrollView style={styles.dropdownList} nestedScrollEnabled keyboardShouldPersistTaps="handled">
+          {options.length === 0 ? (
+            <Text style={[styles.noDataText, { padding: 12 }]}>{emptyText || "Hakuna chaguo."}</Text>
+          ) : (
+            options.map((opt) => (
+              <TouchableOpacity
+                key={opt.value}
+                style={[styles.dropdownItem, value === opt.value && styles.dropdownItemActive]}
+                onPress={() => { onChange(opt.value); setOpen(false); }}
+                activeOpacity={0.7}
+              >
+                {value === opt.value && <Icon name="check" size={16} color={colors.accent} style={{ marginRight: 8 }} />}
+                <Text style={[styles.dropdownItemText, value === opt.value && styles.dropdownItemTextActive]}>
+                  {opt.label}
+                </Text>
+              </TouchableOpacity>
+            ))
+          )}
+        </ScrollView>
       )}
     </View>
   );
@@ -339,44 +351,55 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     fontStyle: "italic",
   },
-  optionRow: {
+  dropdownBtn: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 12,
-    borderRadius: 10,
+    justifyContent: "space-between",
     borderWidth: 1,
     borderColor: colors.border,
-    marginBottom: 8,
-  },
-  optionRowActive: {
-    borderColor: colors.accent,
-    backgroundColor: colors.accent + "15",
-  },
-  radio: {
-    width: 20,
-    height: 20,
     borderRadius: 10,
-    borderWidth: 2,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    backgroundColor: colors.surface,
+  },
+  dropdownValue: {
+    flex: 1,
+    fontSize: typography.sizes.base,
+    color: colors.text,
+    marginRight: 8,
+  },
+  dropdownList: {
+    borderWidth: 1,
     borderColor: colors.border,
+    borderRadius: 10,
+    backgroundColor: colors.surface,
+    marginTop: 4,
+    maxHeight: 220,
+    overflow: "hidden",
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 4,
+    zIndex: 100,
+  },
+  dropdownItem: {
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    marginRight: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 11,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border + "80",
   },
-  radioActive: {
-    borderColor: colors.accent,
+  dropdownItemActive: {
+    backgroundColor: colors.accent + "18",
   },
-  radioDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: colors.accent,
-  },
-  optionText: {
+  dropdownItemText: {
     fontSize: typography.sizes.base,
     color: colors.text,
     flex: 1,
   },
-  optionTextActive: {
+  dropdownItemTextActive: {
     color: colors.primary,
     fontWeight: typography.weights.semibold,
   },
