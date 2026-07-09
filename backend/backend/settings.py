@@ -107,7 +107,7 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.IsAuthenticated",
     ),
     "DEFAULT_PAGINATION_CLASS": "core.pagination.DynamicPageSizePagination",
-    "PAGE_SIZE": 20,
+    "PAGE_SIZE": 1000,
     "DEFAULT_RENDERER_CLASSES": (
         "rest_framework.renderers.JSONRenderer",
     ),
