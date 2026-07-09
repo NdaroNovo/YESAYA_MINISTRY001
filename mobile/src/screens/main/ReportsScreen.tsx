@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   View, Text, StyleSheet, ScrollView, RefreshControl,
   TouchableOpacity, Modal, Alert, TextInput,
@@ -48,6 +49,9 @@ export default function ReportsScreen() {
   const [titleModal, setTitleModal] = useState(false);
   const [reportTitle, setReportTitle] = useState("");
   const [generated, setGenerated] = useState(false);
+  const listsLoaded = useRef(false);
+
+  const STORAGE_KEY = "reports_last_state";
 
   const notify = (msg: string) => Alert.alert("✅ Imekamilika", msg);
 
@@ -60,9 +64,35 @@ export default function ReportsScreen() {
       setMtaaList(mr.data);
       setChurchList(cr.data);
       setOfferingTypes(otr.data);
-      if (jr.data.length) setSelectedJimbo(jr.data[0].id.toString());
-      if (mr.data.length) setSelectedMtaa(mr.data[0].id.toString());
-      if (cr.data.length) setSelectedChurch(cr.data[0].id.toString());
+
+      try {
+        const saved = await AsyncStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const s = JSON.parse(saved);
+          if (s.reportType) setReportType(s.reportType);
+          if (s.year) setYear(s.year);
+          if (s.month !== undefined) setMonth(s.month);
+          if (s.selectedJimbo) setSelectedJimbo(s.selectedJimbo);
+          else if (jr.data.length) setSelectedJimbo(jr.data[0].id.toString());
+          if (s.selectedMtaa) setSelectedMtaa(s.selectedMtaa);
+          else if (mr.data.length) setSelectedMtaa(mr.data[0].id.toString());
+          if (s.selectedChurch) setSelectedChurch(s.selectedChurch);
+          else if (cr.data.length) setSelectedChurch(cr.data[0].id.toString());
+          if (s.reportTitle) setReportTitle(s.reportTitle);
+          if (s.evangelism) setEvangelism(s.evangelism);
+          if (s.offerings) setOfferings(s.offerings);
+          if (s.generated) setGenerated(true);
+        } else {
+          if (jr.data.length) setSelectedJimbo(jr.data[0].id.toString());
+          if (mr.data.length) setSelectedMtaa(mr.data[0].id.toString());
+          if (cr.data.length) setSelectedChurch(cr.data[0].id.toString());
+        }
+      } catch {
+        if (jr.data.length) setSelectedJimbo(jr.data[0].id.toString());
+        if (mr.data.length) setSelectedMtaa(mr.data[0].id.toString());
+        if (cr.data.length) setSelectedChurch(cr.data[0].id.toString());
+      }
+      listsLoaded.current = true;
     })();
   }, []);
 
@@ -115,6 +145,16 @@ export default function ReportsScreen() {
       setEvangelism(evData);
       setOfferings(offData);
       setGenerated(true);
+      try {
+        await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify({
+          reportType, year, month,
+          selectedJimbo, selectedMtaa, selectedChurch,
+          reportTitle,
+          evangelism: evData,
+          offerings: offData,
+          generated: true,
+        }));
+      } catch {}
       notify("Ripoti imetengenezwa! Unaweza kushare au kuprint.");
     } catch {
       Alert.alert("Kosa", "Imeshindwa kupakia taarifa. Hakikisha umeunganishwa na mtandao.");
