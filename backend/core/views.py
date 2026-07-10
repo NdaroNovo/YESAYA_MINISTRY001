@@ -212,6 +212,7 @@ APP_LATEST_VERSION = "1.1.0"
 
 
 @api_view(["GET"])
+@permission_classes([AllowAny])
 def health_check(request):
     return Response({
         "status": "ok",
