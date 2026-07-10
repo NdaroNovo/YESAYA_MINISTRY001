@@ -16,7 +16,11 @@ const statIcons: Record<string, string> = {
   "Wanachama": "account-group",
   "Waliobatizwa": "water",
   "Waliokombolewa": "heart",
+  "Waliotembelewa": "walk",
+  "Waliosaidika": "hand-heart",
   "Matoleo": "cash",
+  "Sehemu ya Kanisa": "bank",
+  "Inayoelekea Jimboni": "arrow-up-circle",
 };
 
 export default function DashboardScreen() {
@@ -52,7 +56,11 @@ export default function DashboardScreen() {
     { label: "Wanachama", value: stats.total_members },
     { label: "Waliobatizwa", value: stats.total_baptized },
     { label: "Waliokombolewa", value: stats.total_converted },
+    { label: "Waliotembelewa", value: stats.total_visited },
+    { label: "Waliosaidika", value: stats.total_supported },
     { label: "Matoleo (TSh)", value: formatMoney(stats.total_offerings) },
+    { label: "Sehemu ya Kanisa (TSh)", value: formatMoney(stats.church_share) },
+    { label: "Inayoelekea Jimboni (TSh)", value: formatMoney(stats.field_share) },
   ] : [];
 
   return (
@@ -97,7 +105,7 @@ const styles = StyleSheet.create({
   scroll: { padding: 16, paddingBottom: 32 },
   loading: { textAlign: "center", color: colors.textMuted, marginTop: 20 },
   grid: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between" },
-  statCard: { width: "48%", marginBottom: 12 },
+  statCard: { width: "31%", marginBottom: 12 },
   statRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   statValue: { fontSize: typography.sizes.xl, fontWeight: typography.weights.bold, color: colors.primary },
   statLabel: { fontSize: typography.sizes.sm, color: colors.textMuted, marginTop: 2 },

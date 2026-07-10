@@ -266,17 +266,10 @@ export default function ReportsScreen() {
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:Arial,sans-serif;font-size:9.5pt;color:#111;background:#fff;line-height:1.45}
 
-  /* ── HEADER ── */
-  .rh{border-bottom:3px solid #1a237e;padding-bottom:8px;margin-bottom:12px;display:table;width:100%}
-  .rh-left{display:table-cell;vertical-align:middle;width:70%}
-  .rh-right{display:table-cell;vertical-align:middle;text-align:right;font-size:7.5pt;color:#555;width:30%}
-  .rh-title{font-size:15pt;font-weight:bold;color:#1a237e;letter-spacing:0.5px}
-  .rh-sub{font-size:8pt;color:#666;margin-top:2px}
-
   /* ── TITLE BLOCK ── */
-  .tb{background:#1a237e;color:#fff;text-align:center;padding:9px 14px;margin-bottom:10px}
-  .tb h1{font-size:12pt;font-weight:bold;letter-spacing:0.3px;margin-bottom:4px}
-  .tb-meta{font-size:8pt;opacity:0.88;line-height:1.6}
+  .tb{background:#1a237e;color:#fff;text-align:center;padding:12px 16px;margin-bottom:10px;border-radius:0}
+  .tb h1{font-size:14pt;font-weight:bold;letter-spacing:0.4px;margin-bottom:5px}
+  .tb-meta{font-size:8pt;opacity:0.9;line-height:1.6}
 
   /* ── META TABLE ── */
   .meta-tbl{width:100%;border-collapse:collapse;margin-bottom:12px;font-size:8.5pt}
@@ -318,25 +311,11 @@ export default function ReportsScreen() {
 </style>
 </head><body>
 
-<!-- HEADER -->
-<div class="rh">
-  <div class="rh-left">
-    <div class="rh-title">${entityName}</div>
-    <div class="rh-sub">Taarifa Rasmi ya Kifedha na Uinjilisti &nbsp;|&nbsp; ${levelLabel}</div>
-  </div>
-  <div class="rh-right">
-    <div>Kumb: ${refCode}</div>
-    <div>Tarehe: ${now}</div>
-  </div>
-</div>
-
-<!-- TITLE -->
+<!-- TITLE (juu kabisa, hakuna chochote juu yake) -->
 <div class="tb">
   <h1>${title}</h1>
   <div class="tb-meta">
-    Kipindi: <strong>${periodLabel}</strong>&nbsp;&nbsp;|&nbsp;&nbsp;
-    Kiwango: <strong>${levelLabel}</strong>&nbsp;&nbsp;|&nbsp;&nbsp;
-    ${entityName}
+    ${entityName} &nbsp;|&nbsp; ${levelLabel} &nbsp;|&nbsp; ${periodLabel}
   </div>
 </div>
 
@@ -423,8 +402,7 @@ export default function ReportsScreen() {
 <!-- FOOTER -->
 <div class="ft">
   <div class="ft-left">
-    <div><strong>${entityName}</strong> &mdash; ${levelLabel}</div>
-    <div>Kumb: ${refCode} &nbsp;|&nbsp; ${periodLabel}</div>
+    <div>Kumb: ${refCode} &nbsp;|&nbsp; ${entityName} &nbsp;|&nbsp; ${periodLabel}</div>
     <div style="margin-top:2px;color:#999">Taarifa imetolewa kwa mfumo wa kielektroniki</div>
   </div>
   <div class="ft-right">
@@ -452,8 +430,13 @@ export default function ReportsScreen() {
     } catch { Alert.alert("Kosa", "Imeshindwa kushare."); }
   };
 
-  const handleTitleSave = () => {
+  const handleTitleSave = async () => {
     setTitleModal(false);
+    try {
+      const saved = await AsyncStorage.getItem(STORAGE_KEY);
+      const prev = saved ? JSON.parse(saved) : {};
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify({ ...prev, reportTitle }));
+    } catch {}
     notify(`Kichwa cha habari kimewekwa: "${reportTitle}"`);
   };
 
@@ -538,7 +521,7 @@ export default function ReportsScreen() {
 
             {/* ── SEHEMU I: MATOLEO kwa aina ── */}
             <Card style={styles.tableCard}>
-              <Text style={styles.sectionTitle}>� SEHEMU I: MATOLEO</Text>
+              <Text style={styles.sectionTitle}>SEHEMU I: MATOLEO</Text>
               <Text style={styles.sectionSub}>Mchanganuo kwa aina — Sehemu ya Kanisa na inayoelekea Jimboni</Text>
               {offerings.length === 0 ? (
                 <Text style={styles.emptyRow}>Hakuna rekodi za matoleo kwa kipindi hiki</Text>
