@@ -7,7 +7,9 @@ import { useAuthStore } from "../../store/authStore";
 import { authApi } from "../../api/services";
 import { colors } from "../../theme/colors";
 import { typography } from "../../theme/typography";
-import { getRoleLabel } from "../../utils/helpers";
+import { getRoleLabel, apiErrorMessage } from "../../utils/helpers";
+import Constants from "expo-constants";
+import { currentServerUrl } from "../../api/client";
 
 export default function ProfileScreen() {
   const { user, clearAuth } = useAuthStore();
@@ -30,8 +32,8 @@ export default function ProfileScreen() {
       setModalVisible(false);
       setCurrentPassword("");
       setNewPassword("");
-    } catch {
-      Alert.alert("Kosa", "Imeshindwa kubadilisha nenosiri.");
+    } catch (err) {
+      Alert.alert("Kosa", apiErrorMessage(err, "Imeshindwa kubadilisha nenosiri."));
     }
   };
 
@@ -48,6 +50,11 @@ export default function ProfileScreen() {
           <Text style={styles.role}>{getRoleLabel(user?.role || "")}</Text>
           <Text style={styles.email}>{user?.email}</Text>
           <Text style={styles.phone}>{user?.phone || "Hakuna simu"}</Text>
+        </Card>
+
+        <Card style={styles.infoCard}>
+          <Text style={styles.infoLine}>Server: {currentServerUrl()}</Text>
+          <Text style={styles.infoLine}>Toleo la App: {Constants.expoConfig?.version ?? "-"}</Text>
         </Card>
 
         <Button title="Badilisha Nenosiri" onPress={() => setModalVisible(true)} variant="outline" style={styles.btn} />
@@ -91,6 +98,8 @@ const styles = StyleSheet.create({
   email: { fontSize: typography.sizes.sm, color: colors.textMuted, marginTop: 8 },
   phone: { fontSize: typography.sizes.sm, color: colors.textMuted, marginTop: 2 },
   btn: { marginBottom: 12 },
+  infoCard: { marginBottom: 16 },
+  infoLine: { fontSize: typography.sizes.xs, color: colors.textMuted, marginVertical: 2 },
   modalOverlay: { flex: 1, backgroundColor: colors.overlay, justifyContent: "center", padding: 20 },
   modalContent: { backgroundColor: colors.surface, borderRadius: 16, padding: 20 },
   modalTitle: { fontSize: typography.sizes.lg, fontWeight: typography.weights.bold, color: colors.primary, marginBottom: 16 },

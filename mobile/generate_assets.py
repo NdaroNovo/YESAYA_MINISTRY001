@@ -9,7 +9,7 @@ assets_dir = os.path.join(os.path.dirname(__file__), "assets")
 
 
 def draw_my_text(draw, center, size, font_path=None):
-    text = "MY"
+    text = "YM"
     if font_path and os.path.exists(font_path):
         try:
             font = ImageFont.truetype(font_path, size)
@@ -24,7 +24,7 @@ def draw_my_text(draw, center, size, font_path=None):
 
     x = center[0] - text_width // 2
     y = center[1] - text_height // 2
-    draw.text((x, y), text, fill=GOLD, font=font)
+    draw.text((x, y), text, fill=WHITE, font=font)
 
 
 def create_icon(size, output, draw_text=True):

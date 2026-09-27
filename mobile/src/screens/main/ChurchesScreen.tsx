@@ -15,6 +15,7 @@ import { Card, Input, Button, Header, EmptyState, FAB, SelectPicker } from "../.
 import { churchApi, mtaaApi } from "../../api/services";
 import { useAuthStore } from "../../store/authStore";
 import { colors } from "../../theme/colors";
+import { roleAtLeast } from "../../utils/helpers";
 import { typography } from "../../theme/typography";
 import type { Church, Mtaa } from "../../types";
 
@@ -26,7 +27,7 @@ export default function ChurchesScreen() {
   const [editing, setEditing] = useState<Church | null>(null);
   const [form, setForm] = useState({ name: "", pastor_name: "", phone: "", address: "", member_count: "", mtaa: "" });
   const { user } = useAuthStore();
-  const canWrite = user?.role !== "viewer";
+  const canWrite = roleAtLeast(user, "mtaa_leader");
 
   const load = async () => {
     setLoading(true);

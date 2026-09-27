@@ -81,19 +81,19 @@ export default function DashboardScreen() {
             {statItems.map((item) => (
               <Card key={item.label} style={styles.statCard}>
                 <View style={styles.statRow}>
-                  <View>
-                    <Text style={styles.statValue}>{item.value}</Text>
+                  <View style={styles.statText}>
+                    <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit>{item.value}</Text>
                     <Text style={styles.statLabel}>{item.label}</Text>
                   </View>
                   <View style={styles.iconCircle}>
-                    <Icon name={statIcons[item.label] || "chart-box"} size={22} color={colors.accent} />
+                    <Icon name={statIcons[item.label.replace(" (TSh)", "")] || "chart-box"} size={22} color={colors.accent} />
                   </View>
                 </View>
               </Card>
             ))}
           </View>
         ) : (
-          <EmptyState message="Haiwezi kupakia taarifa. Hakikisha unakwenda kwenye server." />
+          <EmptyState message="Imeshindwa kupakia taarifa. Hakikisha una intaneti, kisha vuta chini kujaribu tena." />
         )}
       </ScrollView>
     </SafeAreaView>
@@ -105,10 +105,11 @@ const styles = StyleSheet.create({
   scroll: { padding: 16, paddingBottom: 32 },
   loading: { textAlign: "center", color: colors.textMuted, marginTop: 20 },
   grid: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between" },
-  statCard: { width: "31%", marginBottom: 12 },
+  statCard: { width: "48%", marginBottom: 12 },
   statRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  statValue: { fontSize: typography.sizes.xl, fontWeight: typography.weights.bold, color: colors.primary },
-  statLabel: { fontSize: typography.sizes.sm, color: colors.textMuted, marginTop: 2 },
+  statValue: { fontSize: typography.sizes.lg, fontWeight: typography.weights.bold, color: colors.primary },
+  statText: { flex: 1, marginRight: 8 },
+  statLabel: { fontSize: typography.sizes.xs, color: colors.textMuted, marginTop: 2 },
   iconCircle: {
     width: 40,
     height: 40,

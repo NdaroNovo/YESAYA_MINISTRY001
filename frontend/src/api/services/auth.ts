@@ -1,4 +1,5 @@
-import api from "@/api/axios"
+import api, { ACCESS_KEY, REFRESH_KEY, clearSession } from "@/api/axios"
+import type { Role } from "@/api/types"
 
 export interface LoginPayload {
   username: string
@@ -12,20 +13,22 @@ export interface LoginResponse {
     id: number
     username: string
     email: string
-    role: string
+    role: Role
     full_name: string
+    phone: string
     assigned_mtaa: number | null
     assigned_church: number | null
+    use_location: boolean
   }
 }
 
 export const login = async (payload: LoginPayload): Promise<LoginResponse> => {
-  const { data } = await api.post("/auth/login/", payload)
-  api.defaults.headers.Authorization = `Bearer ${data.access}`
+  const { data } = await api.post<LoginResponse>("/auth/login/", payload)
+  localStorage.setItem(ACCESS_KEY, data.access)
+  localStorage.setItem(REFRESH_KEY, data.refresh)
   return data
 }
 
 export const logout = () => {
-  localStorage.removeItem("ym_access_token")
-  delete api.defaults.headers.Authorization
+  clearSession()
 }

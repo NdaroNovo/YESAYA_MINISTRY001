@@ -579,7 +579,7 @@ export default function ReportsScreen() {
 
             {/* ── SEHEMU II: UINJILISTI ── */}
             <Card style={styles.tableCard}>
-              <Text style={styles.sectionTitle}>�️ SEHEMU II: UINJILISTI</Text>
+              <Text style={styles.sectionTitle}>🕊️ SEHEMU II: UINJILISTI</Text>
               <Text style={styles.sectionSub}>Rekodi za shughuli za kiroho na ufuatiliaji</Text>
               <View style={styles.tableHeader}>
                 {["Kipindi", "Batizwa", "Ongolewa", "Tembelewa", "Saidika"].map((h) => (

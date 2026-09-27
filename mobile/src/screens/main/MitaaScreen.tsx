@@ -18,6 +18,7 @@ import { useAuthStore } from "../../store/authStore";
 import { colors } from "../../theme/colors";
 import { typography } from "../../theme/typography";
 import type { Mtaa, Jimbo } from "../../types";
+import { roleAtLeast, apiErrorMessage } from "../../utils/helpers";
 import type { MitaaStackParamList } from "../../navigation/MitaaStack";
 
 type Props = NativeStackScreenProps<MitaaStackParamList, "MitaaList">;
@@ -33,7 +34,7 @@ export default function MitaaScreen({ navigation }: Props) {
   const [jimboForm, setJimboForm] = useState({ name: "", address: "", region: "Tanzania" });
   const [savingJimbo, setSavingJimbo] = useState(false);
   const { user } = useAuthStore();
-  const canWrite = user?.role !== "viewer";
+  const canWrite = roleAtLeast(user, "jimbo_admin");
 
   const load = async () => {
     setLoading(true);
@@ -84,8 +85,8 @@ export default function MitaaScreen({ navigation }: Props) {
       }
       setModalVisible(false);
       load();
-    } catch {
-      Alert.alert("Kosa", "Imeshindwa kuhifadhi mtaa.");
+    } catch (err) {
+      Alert.alert("Kosa", apiErrorMessage(err, "Imeshindwa kuhifadhi mtaa."));
     }
   };
 
@@ -99,8 +100,8 @@ export default function MitaaScreen({ navigation }: Props) {
           try {
             await mtaaApi.delete(id);
             load();
-          } catch {
-            Alert.alert("Kosa", "Imeshindwa kufuta mtaa.");
+          } catch (err) {
+            Alert.alert("Kosa", apiErrorMessage(err, "Imeshindwa kufuta mtaa."));
           }
         },
       },
@@ -125,8 +126,8 @@ export default function MitaaScreen({ navigation }: Props) {
       setJimbo(updated);
       setForm((f) => ({ ...f, jimbo: newJimbo.id.toString() }));
       setJimboModalVisible(false);
-    } catch {
-      Alert.alert("Kosa", "Imeshindwa kuhifadhi Jimbo.");
+    } catch (err) {
+      Alert.alert("Kosa", apiErrorMessage(err, "Imeshindwa kuhifadhi Jimbo."));
     } finally {
       setSavingJimbo(false);
     }
@@ -183,7 +184,7 @@ export default function MitaaScreen({ navigation }: Props) {
           ListEmptyComponent={<EmptyState message="Hakuna mitaa iliyosajiliwa bado." />}
           contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
         />
-        <FAB onPress={openAdd} />
+        {canWrite && <FAB onPress={openAdd} />}
       </View>
 
       <Modal visible={modalVisible} animationType="slide" transparent>

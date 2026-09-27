@@ -6,23 +6,31 @@ import LoginScreen from "../screens/auth/LoginScreen";
 import MainTabs from "./MainTabs";
 import { useAuthStore } from "../store/authStore";
 import { authApi } from "../api/services";
+import { ACCESS_KEY, loadServerUrl, setAuthFailureHandler } from "../api/client";
 import UpdateChecker from "../components/UpdateChecker";
 
 const Stack = createNativeStackNavigator();
 
 export default function AppNavigator() {
-  const { isAuthenticated, user, setAuth, clearAuth, setLoading, isLoading } = useAuthStore();
+  const { isAuthenticated, setAuth, clearAuth, setLoading, isLoading } = useAuthStore();
 
   useEffect(() => {
+    setAuthFailureHandler(() => {
+      clearAuth();
+    });
     const init = async () => {
-      const token = await SecureStore.getItemAsync("ym_access_token");
+      await loadServerUrl();
+      const token = await SecureStore.getItemAsync(ACCESS_KEY);
       if (token) {
         try {
           const { data } = await authApi.me();
-          await setAuth(data, token);
-        } catch {
-          await clearAuth();
+          await setAuth(data, (await SecureStore.getItemAsync(ACCESS_KEY)) || token);
+        } catch (err: any) {
+          // Toka tu kama server imekataa token; bila mtandao endelea na user aliyehifadhiwa
+          if (err?.response?.status === 401) await clearAuth();
         }
+      } else {
+        await clearAuth();
       }
       setLoading(false);
     };

@@ -66,10 +66,12 @@ ASGI_APPLICATION = "backend.asgi.application"
 DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{BASE_DIR / 'db.sqlite3'}")
 
 if DATABASE_URL.startswith("sqlite"):
+    # sqlite:///db.sqlite3 au sqlite:///demo.sqlite3 (njia fupi inahesabiwa kutoka backend/)
+    sqlite_name = DATABASE_URL.split("sqlite:///", 1)[-1] or "db.sqlite3"
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
+            "NAME": BASE_DIR / sqlite_name,
         }
     }
 else:
@@ -91,6 +93,11 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+# React frontend iliyojengwa (npm run build) inahudumiwa na Django kwenye URL moja
+FRONTEND_DIST = BASE_DIR.parent / "frontend" / "dist"
+if FRONTEND_DIST.exists():
+    WHITENOISE_ROOT = FRONTEND_DIST
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
@@ -135,6 +142,9 @@ CSRF_TRUSTED_ORIGINS = [
     for origin in os.getenv("CSRF_TRUSTED_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173").split(",")
     if origin.strip()
 ]
+
+# Nyuma ya proxy ya HTTPS (Render, Cloudflare tunnel)
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True

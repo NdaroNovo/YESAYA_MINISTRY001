@@ -3,7 +3,7 @@
 ## 1. Jina la Application na Icone
 
 - **Jina la Application:** `YESAYA_MINISTRY`
-- **Icone ya App:** `MY` (herufi mbili zimebebana kwenye mduara wa dhahabu)
+- **Icone ya App:** `YM` (herufi mbili zimebebana kwenye mduara wa dhahabu)
 - **Package Name:** `org.yesayaministry.app`
 
 ## 2. Lugha na Framework zilizotumika
@@ -31,12 +31,20 @@
     ↓
 [Backend inarudisha access token + refresh token + user data]
     ↓
-[Hifadhi access token kwa Expo Secure Store]
+[Hifadhi access token + refresh token kwa Expo Secure Store]
     ↓
 [Zustand inasasisha auth state] → [Elekea Main Tabs]
     ↓
 [Kila baadae: GET /api/users/me/ kuhakikisha token bado sahihi]
+    ↓
+[Access token ikiisha (401) → app inaomba mpya kwa POST /api/auth/refresh/ kiotomatiki;
+ refresh token nayo ikiisha → mtumiaji anarudishwa Login]
 ```
+
+- Location ya login (kama imeruhusiwa) inatumwa kwa headers `X-Location-Lat` / `X-Location-Lng`.
+- Bila intaneti app haimtoi mtumiaji; inamtoa tu kama server imekataa token.
+- Kwenye skrini ya Login, kitufe cha **Server** kinaruhusu kubadilisha anwani ya server
+  (mf. server ya demo `192.168.1.10:8010`) na kuijaribu kabla ya kuingia.
 
 ### Endpoints za Authentication
 
@@ -71,7 +79,7 @@ Login → Main Tabs → Dashboard
 
 **Flow:**
 ```
-Dashboard → Tab "Makanisa" → Orodha ya makanisa
+Dashboard → Tab "Mitaa" → Chagua Mtaa → Orodha ya makanisa ya mtaa huo
     ↓
 [Bonyeza "Ongeza Kanisa"] → [Jaza fomu] → [Hifadhi]
     ↓
@@ -102,6 +110,9 @@ Dashboard → Tab "Taarifa" → Chagua Tab (Uinjilisti / Matoleo)
     ↓
 [Backend inahesabu mgawanyo wa kanisa/jimbo kwa matoleo] → [Orodha inasasishwa]
 ```
+
+Taarifa zinaweza pia kuingizwa ndani ya kanisa husika: Mitaa → Mtaa → Kanisa → Uinjilisti / Matoleo
+(hapo unaweza kuhariri na kufuta pia).
 
 **Inachofanya:**
 - **Uinjilisti:** Kuhifadhi kila mwezi idadi ya waliobatizwa, waliokombolewa, waliotembelewa, waliosaidika.
@@ -174,6 +185,14 @@ Dashboard → Tab "Wasifu" → Angalia taarifa zako
 | **Church Leader** | Kiongozi wa Kanisa — anaweza kuona/kudhibiti kanisa lake tu |
 | **Viewer** | Mwangaliazi — anaweza tu kuangalia taarifa |
 
+App inaficha vitufe vya kuongeza/kuhariri/kufuta kwa mtumiaji asiye na ruhusa:
+
+| Kitendo | Role ya chini inayohitajika |
+|---------|------------------------------|
+| Jimbo / Mitaa | Jimbo Admin |
+| Makanisa (na idadi ya wanachama) | Mtaa Leader (mtaa wake tu) |
+| Uinjilisti / Matoleo | Church Leader (kanisa lake tu) |
+
 ## 8. Database (PostgreSQL)
 
 Tabo muhimu:
@@ -238,6 +257,8 @@ Tabo muhimu:
    ```
 3. Fungua app upya.
 
+> Bila kujenga APK upya, server inaweza pia kubadilishwa ndani ya app: **Login → Server**.
+
 ### Hatua 5: Unda APK ya Test
 
 1. Sakinisha EAS CLI:
@@ -254,7 +275,45 @@ Tabo muhimu:
    ```
 4. Pakua APK kutoka EAS dashboard ukiweka kwenye simu ya Android.
 
-## 10. Maelezo ya Ufundi
+## 10. Demo (SQLite) na APK ya Kujaribu
+
+Kwa ajili ya demo kuna database tofauti `backend/demo.sqlite3` (haiguswi `db.sqlite3`).
+Inajazwa na `python manage.py seed_demo` ikiwa na:
+
+- Jimbo 1 (`Jimbo la Mashariki (Demo)`), Mitaa 3, Makanisa 8
+- Taarifa za uinjilisti na matoleo za miezi 12 iliyopita (mgawanyo wa Kanisa/Jimbo unahesabiwa kama kawaida)
+- Mtumiaji mmoja kwa kila role, nenosiri `Demo@2026`:
+
+| Username | Role | Anaona |
+|----------|------|--------|
+| `demo_admin` | Super Admin | Kila kitu |
+| `demo_jimbo` | Jimbo Admin | Jimbo zima |
+| `demo_mtaa` | Mtaa Leader | Mtaa wa Kinondoni (makanisa 3) |
+| `demo_kanisa` | Church Leader | Kanisa la Mwenge tu |
+| `demo_viewer` | Viewer | Kila kitu (kusoma tu) |
+
+### Kuwasha server ya demo (Windows)
+
+```powershell
+cd backend
+powershell -ExecutionPolicy Bypass -File .un_demo.ps1          # -Reset kuanza upya na data safi
+```
+
+Script inaonyesha IP ya kompyuta. Kwenye APK: **Login → Server → weka `IP:8010` → Jaribu Muunganiko → Hifadhi**,
+kisha gusa akaunti ya demo. Simu na kompyuta ziwe kwenye WiFi moja. Kurudi server rasmi: **Server → Rudi Server Rasmi**.
+
+### Kujenga APK ndani ya kompyuta (bila EAS)
+
+Inahitaji Node 20, JDK 17 na Android SDK (platform 34, build-tools 34, NDK 26.1):
+
+```bash
+cd mobile
+npx expo prebuild -p android --clean
+cd android && ./gradlew assembleRelease
+# APK: mobile/android/app/build/outputs/apk/release/app-release.apk
+```
+
+## 11. Maelezo ya Ufundi
 
 ### Project Structure ya Mobile App
 
@@ -280,8 +339,8 @@ mobile/
 │   │   │   └── LoginScreen.tsx  # Skrini ya kuingia
 │   │   └── main/
 │   │       ├── DashboardScreen.tsx
-│   │       ├── ChurchesScreen.tsx
-│   │       ├── RecordsScreen.tsx
+│   │       ├── MitaaScreen.tsx         # Mitaa → MtaaChurchesScreen → ChurchDetailScreen
+│   │       ├── RecordsScreen.tsx       # Tab ya Taarifa
 │   │       ├── ReportsScreen.tsx
 │   │       └── ProfileScreen.tsx
 │   ├── store/
@@ -295,7 +354,7 @@ mobile/
 │       └── helpers.ts           # Helpers (months, formatMoney, roleLabel)
 ```
 
-## 11. Endpoints za API kwa Ujumla
+## 12. Endpoints za API kwa Ujumla
 
 | Endpoint | Method | Kazi |
 |----------|--------|------|

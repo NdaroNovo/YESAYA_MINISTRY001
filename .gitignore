@@ -36,3 +36,8 @@ npm-debug.log*
 # OS
 .DS_Store
 Thumbs.db
+
+# Mobile native (inazalishwa na `expo prebuild`)
+mobile/android
+mobile/ios
+mobile/.expo

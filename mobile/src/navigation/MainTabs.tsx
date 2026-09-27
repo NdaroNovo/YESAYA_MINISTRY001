@@ -3,6 +3,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import DashboardScreen from "../screens/main/DashboardScreen";
 import MitaaStack from "./MitaaStack";
+import RecordsScreen from "../screens/main/RecordsScreen";
 import ReportsScreen from "../screens/main/ReportsScreen";
 import ProfileScreen from "../screens/main/ProfileScreen";
 import { colors } from "../theme/colors";
@@ -17,6 +18,7 @@ export default function MainTabs() {
           const icons: Record<string, string> = {
             Dashboard: "view-dashboard",
             Mitaa: "map-marker-multiple",
+            Records: "clipboard-text",
             Reports: "file-chart",
             Profile: "account-circle",
           };
@@ -38,6 +40,7 @@ export default function MainTabs() {
     >
       <Tab.Screen name="Dashboard" component={DashboardScreen} options={{ title: "Dashboard" }} />
       <Tab.Screen name="Mitaa" component={MitaaStack} options={{ title: "Mitaa", headerShown: false }} />
+      <Tab.Screen name="Records" component={RecordsScreen} options={{ title: "Taarifa" }} />
       <Tab.Screen name="Reports" component={ReportsScreen} options={{ title: "Ripoti" }} />
       <Tab.Screen name="Profile" component={ProfileScreen} options={{ title: "Wasifu" }} />
     </Tab.Navigator>

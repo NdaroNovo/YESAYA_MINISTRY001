@@ -18,6 +18,7 @@ import { useAuthStore } from "../../store/authStore";
 import { colors } from "../../theme/colors";
 import { typography } from "../../theme/typography";
 import type { Church, Mtaa } from "../../types";
+import { roleAtLeast, apiErrorMessage } from "../../utils/helpers";
 import type { MitaaStackParamList } from "../../navigation/MitaaStack";
 
 type Props = NativeStackScreenProps<MitaaStackParamList, "MtaaChurches">;
@@ -36,7 +37,7 @@ export default function MtaaChurchesScreen({ route, navigation }: Props) {
     member_count: "",
   });
   const { user } = useAuthStore();
-  const canWrite = user?.role !== "viewer";
+  const canWrite = roleAtLeast(user, "mtaa_leader");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -94,8 +95,8 @@ export default function MtaaChurchesScreen({ route, navigation }: Props) {
       }
       setModalVisible(false);
       load();
-    } catch {
-      Alert.alert("Kosa", "Imeshindwa kuhifadhi kanisa.");
+    } catch (err) {
+      Alert.alert("Kosa", apiErrorMessage(err, "Imeshindwa kuhifadhi kanisa."));
     }
   };
 
@@ -109,8 +110,8 @@ export default function MtaaChurchesScreen({ route, navigation }: Props) {
           try {
             await churchApi.delete(id);
             load();
-          } catch {
-            Alert.alert("Kosa", "Imeshindwa kufuta kanisa.");
+          } catch (err) {
+            Alert.alert("Kosa", apiErrorMessage(err, "Imeshindwa kufuta kanisa."));
           }
         },
       },
@@ -177,7 +178,7 @@ export default function MtaaChurchesScreen({ route, navigation }: Props) {
           }
           contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
         />
-        <FAB onPress={openAdd} />
+        {canWrite && <FAB onPress={openAdd} />}
       </View>
 
       <Modal visible={modalVisible} animationType="slide" transparent>

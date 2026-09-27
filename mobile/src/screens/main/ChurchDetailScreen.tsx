@@ -17,7 +17,8 @@ import { evangelismApi, offeringApi, offeringTypeApi, churchApi } from "../../ap
 import { useAuthStore } from "../../store/authStore";
 import { colors } from "../../theme/colors";
 import { typography } from "../../theme/typography";
-import { formatMoney, MONTHS } from "../../utils/helpers";
+import { formatMoney, MONTHS, roleAtLeast, apiErrorMessage } from "../../utils/helpers";
+import { useLocation } from "../../hooks/useLocation";
 import type { EvangelismRecord, Offering, OfferingType, Church } from "../../types";
 import type { MitaaStackParamList } from "../../navigation/MitaaStack";
 
@@ -59,7 +60,9 @@ export default function ChurchDetailScreen({ route, navigation }: Props) {
   const [editingMember, setEditingMember] = useState(false);
   const [memberCount, setMemberCount] = useState(church.member_count?.toString() || "0");
   const { user } = useAuthStore();
-  const canWrite = user?.role !== "viewer";
+  const canWrite = roleAtLeast(user, "church_leader");
+  const canEditChurch = roleAtLeast(user, "mtaa_leader");
+  const { capture } = useLocation();
 
   const [evForm, setEvForm] = useState({
     month: CURRENT_MONTH, year: CURRENT_YEAR,
@@ -100,8 +103,8 @@ export default function ChurchDetailScreen({ route, navigation }: Props) {
       setChurch(res.data);
       setEditingMember(false);
       Alert.alert("Imehifadhiwa", "Idadi ya wanachama imesasishwa.");
-    } catch {
-      Alert.alert("Kosa", "Imeshindwa kuhifadhi.");
+    } catch (err) {
+      Alert.alert("Kosa", apiErrorMessage(err, "Imeshindwa kuhifadhi."));
     }
   };
 
@@ -137,6 +140,12 @@ export default function ChurchDetailScreen({ route, navigation }: Props) {
     setModalVisible(true);
   };
 
+  // Location ni hiari: ikikataliwa taarifa inahifadhiwa bila coordinates
+  const locationFields = async () => {
+    const loc = await capture();
+    return loc ? { latitude: loc.latitude, longitude: loc.longitude } : {};
+  };
+
   const saveEvangelism = async () => {
     if (!evForm.month || !evForm.year) {
       Alert.alert("Tafadhali", "Mwezi na mwaka zinahitajika.");
@@ -151,6 +160,7 @@ export default function ChurchDetailScreen({ route, navigation }: Props) {
       visited: parseInt(evForm.visited || "0", 10),
       supported: parseInt(evForm.supported || "0", 10),
       comments: evForm.comments,
+      ...(await locationFields()),
     };
     try {
       if (editingEv) {
@@ -162,10 +172,7 @@ export default function ChurchDetailScreen({ route, navigation }: Props) {
       loadData();
       Alert.alert("✅ Imefanikiwa", "Taarifa ya uinjilisti imehifadhiwa.");
     } catch (err: any) {
-      const msg = err?.response?.data
-        ? JSON.stringify(err.response.data)
-        : "Imeshindwa kuhifadhi taarifa ya uinjilisti.";
-      Alert.alert("Kosa", msg);
+      Alert.alert("Kosa", apiErrorMessage(err, "Imeshindwa kuhifadhi taarifa ya uinjilisti."));
     }
   };
 
@@ -181,6 +188,7 @@ export default function ChurchDetailScreen({ route, navigation }: Props) {
       month: parseInt(offForm.month, 10),
       year: parseInt(offForm.year, 10),
       notes: offForm.notes,
+      ...(await locationFields()),
     };
     try {
       if (editingOff) {
@@ -192,24 +200,30 @@ export default function ChurchDetailScreen({ route, navigation }: Props) {
       loadData();
       Alert.alert("✅ Imefanikiwa", "Toleo limehifadhiwa.");
     } catch (err: any) {
-      const msg = err?.response?.data
-        ? JSON.stringify(err.response.data)
-        : "Imeshindwa kuhifadhi toleo.";
-      Alert.alert("Kosa", msg);
+      Alert.alert("Kosa", apiErrorMessage(err, "Imeshindwa kuhifadhi toleo."));
+    }
+  };
+
+  const removeRecord = async (del: () => Promise<unknown>) => {
+    try {
+      await del();
+      loadData();
+    } catch (err) {
+      Alert.alert("Kosa", apiErrorMessage(err, "Imeshindwa kufuta."));
     }
   };
 
   const deleteEv = (id: number) => {
     Alert.alert("Futa", "Una uhakika?", [
       { text: "Ghairi", style: "cancel" },
-      { text: "Futa", style: "destructive", onPress: async () => { await evangelismApi.delete(id); loadData(); } },
+      { text: "Futa", style: "destructive", onPress: () => removeRecord(() => evangelismApi.delete(id)) },
     ]);
   };
 
   const deleteOff = (id: number) => {
     Alert.alert("Futa", "Una uhakika?", [
       { text: "Ghairi", style: "cancel" },
-      { text: "Futa", style: "destructive", onPress: async () => { await offeringApi.delete(id); loadData(); } },
+      { text: "Futa", style: "destructive", onPress: () => removeRecord(() => offeringApi.delete(id)) },
     ]);
   };
 
@@ -247,7 +261,7 @@ export default function ChurchDetailScreen({ route, navigation }: Props) {
             <Text style={styles.memberCount}>{church.member_count || 0}</Text>
             <Text style={styles.memberLabel}>Wanachama</Text>
           </View>
-          {canWrite && !editingMember && (
+          {canEditChurch && !editingMember && (
             <TouchableOpacity
               style={styles.editMemberBtn}
               onPress={() => { setMemberCount(church.member_count?.toString() || "0"); setEditingMember(true); }}
@@ -281,10 +295,10 @@ export default function ChurchDetailScreen({ route, navigation }: Props) {
       <View style={styles.itemRow}>
         <View style={{ flex: 1 }}>
           <Text style={styles.itemTitle}>
-            {MONTHS[item.month - 1] || `Mwezi ${item.month}`} {item.year}
+            {MONTHS[item.month] || `Mwezi ${item.month}`} {item.year}
           </Text>
           <Text style={styles.itemMeta}>Waliobatizwa: <Text style={styles.highlight}>{item.baptized}</Text></Text>
-          <Text style={styles.itemMeta}>Walioongolewa: <Text style={styles.highlight}>{item.converted}</Text></Text>
+          <Text style={styles.itemMeta}>Waliokombolewa: <Text style={styles.highlight}>{item.converted}</Text></Text>
           <Text style={styles.itemMeta}>Waliotembelewa: {item.visited}</Text>
           <Text style={styles.itemMeta}>Waliosaidika: {item.supported}</Text>
           {item.comments ? <Text style={styles.itemMeta}>Maoni: {item.comments}</Text> : null}
@@ -309,7 +323,7 @@ export default function ChurchDetailScreen({ route, navigation }: Props) {
         <View style={{ flex: 1 }}>
           <Text style={styles.itemTitle}>{getTypeName(item.offering_type)}</Text>
           <Text style={styles.itemMeta}>
-            {MONTHS[item.month - 1] || `Mwezi ${item.month}`} {item.year}
+            {MONTHS[item.month] || `Mwezi ${item.month}`} {item.year}
           </Text>
           <Text style={styles.itemMeta}>Kiasi: <Text style={styles.highlight}>{formatMoney(parseFloat(item.amount))}</Text></Text>
           {item.church_share ? <Text style={styles.itemMeta}>Sehemu ya Kanisa: {formatMoney(parseFloat(item.church_share))}</Text> : null}
@@ -365,7 +379,7 @@ export default function ChurchDetailScreen({ route, navigation }: Props) {
             ListEmptyComponent={<EmptyState message="Hakuna taarifa za uinjilisti. Bonyeza + kuongeza." />}
             contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
           />
-          <FAB onPress={openAddEv} />
+          {canWrite && <FAB onPress={openAddEv} />}
         </View>
       ) : (
         <View style={styles.flex}>
@@ -378,7 +392,7 @@ export default function ChurchDetailScreen({ route, navigation }: Props) {
             ListEmptyComponent={<EmptyState message="Hakuna matoleo. Bonyeza + kuongeza." />}
             contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
           />
-          <FAB onPress={openAddOff} />
+          {canWrite && <FAB onPress={openAddOff} />}
         </View>
       )}
 

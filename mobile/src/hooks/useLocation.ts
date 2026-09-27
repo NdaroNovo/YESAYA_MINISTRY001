@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import * as Location from "expo-location";
+import { setLastLocation } from "../api/client";
 
 interface LocationData {
   latitude: number;
@@ -28,6 +29,7 @@ export function useLocation() {
         accuracy: loc.coords.accuracy,
       };
       setLocation(data);
+      setLastLocation(data);
       return data;
     } catch (err: any) {
       setError(err?.message || "Imeshindwa kupata location.");

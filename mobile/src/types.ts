@@ -43,6 +43,7 @@ export interface Mtaa {
 export interface Church {
   id: number;
   mtaa: number;
+  mtaa_name?: string;
   name: string;
   pastor_name: string;
   phone: string;
@@ -54,6 +55,8 @@ export interface Church {
 export interface EvangelismRecord {
   id: number;
   church: number;
+  church_name?: string;
+  mtaa_name?: string;
   recorded_by?: number;
   month: number;
   year: number;
@@ -82,7 +85,10 @@ export interface OfferingType {
 export interface Offering {
   id: number;
   church: number;
+  church_name?: string;
+  mtaa_name?: string;
   offering_type: number;
+  offering_type_name?: string;
   amount: string;
   church_share: string;
   field_share: string;

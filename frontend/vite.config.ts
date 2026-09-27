@@ -10,4 +10,12 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  server: {
+    host: true,
+    proxy: {
+      '/api': 'http://127.0.0.1:8000',
+      '/admin': 'http://127.0.0.1:8000',
+      '/static': 'http://127.0.0.1:8000',
+    },
+  },
 })

@@ -10,6 +10,7 @@ from .views import (
     EvangelismRecordViewSet,
     OfferingTypeViewSet,
     OfferingViewSet,
+    AuditLogViewSet,
     change_password,
     dashboard_stats,
     health_check,
@@ -23,6 +24,7 @@ router.register("churches", ChurchViewSet)
 router.register("evangelism", EvangelismRecordViewSet)
 router.register("offering-types", OfferingTypeViewSet)
 router.register("offerings", OfferingViewSet)
+router.register("audit-logs", AuditLogViewSet)
 
 urlpatterns = [
     path("auth/login/", LocationTokenObtainPairView.as_view(), name="token_obtain_pair"),

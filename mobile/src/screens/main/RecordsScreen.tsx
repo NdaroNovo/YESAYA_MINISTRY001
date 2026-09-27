@@ -17,7 +17,7 @@ import { useAuthStore } from "../../store/authStore";
 import { useLocation } from "../../hooks/useLocation";
 import { colors } from "../../theme/colors";
 import { typography } from "../../theme/typography";
-import { MONTHS, formatMoney } from "../../utils/helpers";
+import { MONTHS, formatMoney, roleAtLeast, apiErrorMessage } from "../../utils/helpers";
 import type { EvangelismRecord, Offering, Church, OfferingType } from "../../types";
 
 type TabType = "evangelism" | "offerings";
@@ -34,7 +34,7 @@ export default function RecordsScreen() {
   const [offForm, setOffForm] = useState({ church: "", offering_type: "", amount: "", month: "", year: "", notes: "" });
   const { user } = useAuthStore();
   const { capture } = useLocation();
-  const canWrite = user?.role !== "viewer";
+  const canWrite = roleAtLeast(user, "church_leader");
 
   const load = async () => {
     setLoading(true);
@@ -49,8 +49,8 @@ export default function RecordsScreen() {
       setOfferings(offRes.data);
       setChurches(cRes.data);
       setOfferingTypes(otRes.data);
-    } catch {
-      Alert.alert("Kosa", "Imeshindwa kupakia taarifa.");
+    } catch (err) {
+      Alert.alert("Kosa", apiErrorMessage(err, "Imeshindwa kupakia taarifa."));
     } finally {
       setLoading(false);
     }
@@ -68,7 +68,22 @@ export default function RecordsScreen() {
     setModalVisible(true);
   };
 
+  const validPeriod = (month: string, year: string) => {
+    const m = parseInt(month, 10);
+    const y = parseInt(year, 10);
+    if (!(m >= 1 && m <= 12) || !(y >= 2000 && y <= 2100)) {
+      Alert.alert("Tafadhali", "Weka mwezi sahihi (1-12) na mwaka sahihi.");
+      return false;
+    }
+    return true;
+  };
+
   const saveEvangelism = async () => {
+    if (!evForm.church) {
+      Alert.alert("Tafadhali", "Chagua kanisa.");
+      return;
+    }
+    if (!validPeriod(evForm.month, evForm.year)) return;
     const loc = await capture();
     const payload = {
       church: parseInt(evForm.church, 10),
@@ -79,18 +94,24 @@ export default function RecordsScreen() {
       visited: parseInt(evForm.visited || "0", 10),
       supported: parseInt(evForm.supported || "0", 10),
       comments: evForm.comments,
-      ...(loc ? { latitude: loc.latitude, longitude: loc.longitude, location_accuracy: loc.accuracy } : {}),
+      ...(loc ? { latitude: loc.latitude, longitude: loc.longitude } : {}),
     };
     try {
       await evangelismApi.create(payload);
       setModalVisible(false);
       load();
-    } catch {
-      Alert.alert("Kosa", "Imeshindwa kuhifadhi taarifa za uinjilisti.");
+      Alert.alert("✅ Imefanikiwa", "Taarifa ya uinjilisti imehifadhiwa.");
+    } catch (err) {
+      Alert.alert("Kosa", apiErrorMessage(err, "Imeshindwa kuhifadhi taarifa za uinjilisti."));
     }
   };
 
   const saveOffering = async () => {
+    if (!offForm.church || !offForm.offering_type || !(parseFloat(offForm.amount) > 0)) {
+      Alert.alert("Tafadhali", "Chagua kanisa, aina ya toleo na weka kiasi zaidi ya sifuri.");
+      return;
+    }
+    if (!validPeriod(offForm.month, offForm.year)) return;
     const loc = await capture();
     const payload = {
       church: parseInt(offForm.church, 10),
@@ -99,20 +120,24 @@ export default function RecordsScreen() {
       month: parseInt(offForm.month, 10),
       year: parseInt(offForm.year, 10),
       notes: offForm.notes,
-      ...(loc ? { latitude: loc.latitude, longitude: loc.longitude, location_accuracy: loc.accuracy } : {}),
+      ...(loc ? { latitude: loc.latitude, longitude: loc.longitude } : {}),
     };
     try {
       await offeringApi.create(payload);
       setModalVisible(false);
       load();
-    } catch {
-      Alert.alert("Kosa", "Imeshindwa kuhifadhi taarifa za matoleo.");
+      Alert.alert("✅ Imefanikiwa", "Toleo limehifadhiwa.");
+    } catch (err) {
+      Alert.alert("Kosa", apiErrorMessage(err, "Imeshindwa kuhifadhi taarifa za matoleo."));
     }
   };
 
+  const churchName = (id: number) => churches.find((c) => c.id === id)?.name || `Kanisa #${id}`;
+
   const renderEv = ({ item }: { item: EvangelismRecord }) => (
     <Card style={styles.itemCard}>
-      <Text style={styles.itemTitle}>{MONTHS[item.month]} {item.year}</Text>
+      <Text style={styles.itemTitle}>{item.church_name || churchName(item.church)}</Text>
+      <Text style={styles.itemPeriod}>{MONTHS[item.month]} {item.year}</Text>
       <Text style={styles.itemMeta}>Waliobatizwa: {item.baptized} | Waliokombolewa: {item.converted}</Text>
       <Text style={styles.itemMeta}>Waliotembelewa: {item.visited} | Waliosaidika: {item.supported}</Text>
     </Card>
@@ -120,7 +145,8 @@ export default function RecordsScreen() {
 
   const renderOff = ({ item }: { item: Offering }) => (
     <Card style={styles.itemCard}>
-      <Text style={styles.itemTitle}>{MONTHS[item.month]} {item.year}</Text>
+      <Text style={styles.itemTitle}>{item.church_name || churchName(item.church)}</Text>
+      <Text style={styles.itemPeriod}>{item.offering_type_name} · {MONTHS[item.month]} {item.year}</Text>
       <Text style={styles.itemMeta}>Kiasi: TSh {formatMoney(item.amount)}</Text>
       <Text style={styles.itemMeta}>Kanisa: TSh {formatMoney(item.church_share)} | Jimbo: TSh {formatMoney(item.field_share)}</Text>
     </Card>
@@ -185,7 +211,7 @@ export default function RecordsScreen() {
                     ? setEvForm({ ...evForm, church: v })
                     : setOffForm({ ...offForm, church: v })
                 }
-                emptyText="Hakuna makanisa. Unda kanisa kwanza kwenye tab ya Makanisa."
+                emptyText="Hakuna makanisa. Unda kanisa kwanza kwenye tab ya Mitaa."
               />
 
               {tab === "evangelism" ? (
@@ -236,6 +262,7 @@ const styles = StyleSheet.create({
   tabTextActive: { color: colors.surface },
   itemCard: { marginBottom: 10 },
   itemTitle: { fontSize: typography.sizes.md, fontWeight: typography.weights.semibold, color: colors.primary },
+  itemPeriod: { fontSize: typography.sizes.sm, color: colors.accent, fontWeight: typography.weights.semibold, marginTop: 2 },
   itemMeta: { fontSize: typography.sizes.sm, color: colors.textMuted, marginTop: 2 },
   modalOverlay: { flex: 1, backgroundColor: colors.overlay },
   modalScroll: { flexGrow: 1, justifyContent: "center", padding: 20 },

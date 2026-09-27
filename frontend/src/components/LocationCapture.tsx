@@ -35,7 +35,8 @@ export default function LocationCapture() {
               <div>
                 <p>{error}</p>
                 <button
-                  onClick={capture}
+                  type="button"
+                  onClick={() => capture()}
                   className="text-xs underline text-navy mt-1"
                 >
                   Jaribu tena

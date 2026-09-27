@@ -37,7 +37,6 @@ export default function Login() {
         username: data.username,
         password: data.password,
       })
-      localStorage.setItem("ym_access_token", response.access)
       dispatch(
         loginSuccess({
           user: {
@@ -46,6 +45,7 @@ export default function Login() {
             email: response.user.email,
             role: response.user.role as AuthUserRole,
             fullName: response.user.full_name,
+            phone: response.user.phone,
             assignedMtaa: response.user.assigned_mtaa,
             assignedChurch: response.user.assigned_church,
           },
@@ -55,14 +55,13 @@ export default function Login() {
     } catch (error: any) {
       console.error("Login failed", error)
       if (error.response) {
-        const detail = error.response.data?.detail
-        if (detail) {
-          setLoginError(detail)
+        if (error.response.status === 401 || error.response.status === 400) {
+          setLoginError("Jina la mtumiaji au nenosiri si sahihi, au akaunti imezimwa.")
         } else {
-          setLoginError("Jina la mtumiaji au nenosiri si sahihi.")
+          setLoginError("Server imepata tatizo. Jaribu tena baadaye.")
         }
       } else if (error.request) {
-        setLoginError("Haiwezi kufikia server. Hakikisha backend inaendesha kwenye http://localhost:8000")
+        setLoginError("Haiwezi kufikia server. Hakikisha una mtandao kisha jaribu tena.")
       } else {
         setLoginError("Kuna tatizo la mtandao. Jaribu tena.")
       }
@@ -109,6 +108,9 @@ export default function Login() {
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   {...register("username")}
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  autoComplete="username"
                   placeholder="Weka jina la mtumiaji"
                   className="pl-10"
                 />
@@ -125,6 +127,7 @@ export default function Login() {
                 <Input
                   {...register("password")}
                   type={showPassword ? "text" : "password"}
+                  autoComplete="current-password"
                   placeholder="Weka nenosiri"
                   className="pl-10 pr-10"
                 />
@@ -141,15 +144,9 @@ export default function Login() {
               )}
             </div>
 
-            <div className="flex items-center justify-between text-sm">
-              <label className="flex items-center gap-2 text-muted-foreground">
-                <input type="checkbox" {...register("rememberMe")} className="rounded" />
-                Nikumbuke
-              </label>
-              <button type="button" className="text-gold hover:underline">
-                Umesahau nenosiri?
-              </button>
-            </div>
+            <p className="text-xs text-muted-foreground">
+              Umesahau nenosiri? Wasiliana na Msimamizi (Super Admin) akuwekee jipya.
+            </p>
 
             <LocationCapture />
 
