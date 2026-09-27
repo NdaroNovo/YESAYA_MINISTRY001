@@ -21,7 +21,7 @@ services:
       - key: PYTHON_VERSION
         value: "3.12.0"
 
- databases:
+databases:
   - name: yesaya-ministry-db
     plan: free
     databaseName: yesaya_ministry
